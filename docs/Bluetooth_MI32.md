@@ -15,7 +15,7 @@ This is therefore the preferred option, if technically possible (= for the suppo
   
 Most of the „older“ BLE-sensor-devices use unencrypted messages, which can be read by all kinds of BLE-devices or even a NRF24L01. With the arrival of "newer" sensors came the problem of encrypted data in MiBeacons, which can be decrypted in Tasmota.  
 Meanwhile it is possible to get the needed "bind_key" without the need to use Xiaomis apps and server infrastructure.  
-At least the LYWSD03 allows the use of a simple BLE connection without any encrypted authentication and the reading of the sensor data using normal subscription methods to GATT-services (currently used on the HM-1x). This is more power hungry than the passive reading of BLE advertisements. It is supported by the driver mainly for legacy reaons, i.e. to read the correct battery status.   
+At least the LYWSD03 allows the use of a simple BLE connection without any encrypted authentication and the reading of the sensor data using normal subscription methods to GATT-services (currently used on the HM-1x). This is more power hungry than the passive reading of BLE advertisements. It is not directly supported by the driver anymore, but can be realized in Berry, i.e. to read the correct battery status.   
 Other sensors like the MJYD2S and nearly every newer device are not usable without the "bind_key".  
   
 The idea is to provide as many automatic functions as possible. Besides the hardware setup, there are zero or very few things to configure.  
