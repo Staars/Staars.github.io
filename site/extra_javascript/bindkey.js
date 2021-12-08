@@ -681,7 +681,7 @@
           but.setAttribute("onClick", targetFunc);
           row.appendChild(but);
           _body.appendChild(row);
-          addLog(result);
+          // addLog(result);
           i += 1;
       }
       document.getElementById('oldMi32Cfg').appendChild(_body);
