@@ -18,6 +18,10 @@ Meanwhile it is possible to get the needed "bind_key" without the need to use Xi
 At least the LYWSD03 allows the use of a simple BLE connection without any encrypted authentication and the reading of the sensor data using normal subscription methods to GATT-services (currently used on the HM-1x). This is more power hungry than the passive reading of BLE advertisements. It is supported by the driver mainly for legacy reaons, i.e. to read the correct battery status.   
 Other sensors like the MJYD2S and nearly every newer device are not usable without the "bind_key".  
   
+The idea is to provide as many automatic functions as possible. Besides the hardware setup, there are zero or very few things to configure.  
+The sensor namings are based on the original sensor names and shortened if appropriate (Flower care -> Flora). A part of the MAC will be added to the name as a suffix.  
+All sensors are treated as if they are physically connected to the ESP32 device. For motion and remote control sensors MQTT-messages will be published in (nearly) real time.
+  
 ### Supported Devices
 
 !!! note "It can not be ruled out, that changes in the device firmware may break the functionality of this driver completely!"  
@@ -129,20 +133,13 @@ It is possible to do a pairing and get the necessary decryption key ("bind_key")
 This project also provides a custom firmware for the LYWSD03MMC, which then becomes an ATC and is supported by Tasmota too. Default ATC-setting will drain the battery more than stock firmware, because of very frequent data sending.  
 This key and the corresponding MAC of the sensor can be injected with the MI32key-command (or NRFMJYD2S), but the new and recommended option is tu use a **mi32cfg file**.
 
-It is still possible to save the whole config as RULE like that:  
+It is still possible to save the whole config as RULE like that:  (not recommended anymore!)
   
 ```haskell
 rule1 on System#Boot do backlog MI32key 00112233445566778899AABBCCDDEEFF112233445566; MI32key 00112233445566778899AABBCCDDEEFF112233445566 endon
 ```  
 (key for two sensors)  
    
-  
-#### Working principle of Tasmota BLE drivers (>8.5.)
-  
-The idea is to provide drivers with as many automatic functions as possible. Besides the hardware setup, there are zero or very few things to configure.  
-The sensor namings are based on the original sensor names and shortened if appropriate (Flower care -> Flora). A part of the MAC will be added to the name as a suffix.  
-All sensors are treated as if they are physically connected to the ESP32 device. For motion and remote control sensors MQTT-messages will be published in (nearly) real time.
-  
   
 ## MI32 Configuration
   
@@ -237,9 +234,8 @@ MI32Option2|`0` = sensor data only at Teleperiod (_default_)<br>`1` = direct bri
 MI32Option3|`0` = do not add new sensors, which is set after a valid **mi32cfg file** is parsed after boot (_default_)<br>`1` = turn on auto-adding of new sensors again
 
 !!! tip 
-If you really want to read battery for LYWSD02, Flora and CGD1, consider doing it once a day with a RULE:
-`RULE1 on Time#Minute=30 do MI32Battery endon`
-This will update every day at 00:30 AM.  
+If you really want to read battery for LYWSD02, Flora and CGD1, consider doing it in Berry.
+
 
 !!! tip 
 If you want to add a new BLE sensor to your config on the device, use `MI32option3 1` to add the new sensor by catching a packet. Then use `MI32Cfg` to save the new config on flash.
@@ -247,7 +243,7 @@ If you want to add a new BLE sensor to your config on the device, use `MI32optio
 
 ## HomeKit Bridge
   
-If activated at compile time the driver will start the HAP core (= the main task of the HomeKit framework) after succesfully reading a valid **mi32cfg file** after the start. It will create a 'bridge accessory' presenting all known BLE devices to HomeKit. You can add the ESP32 as such a **Mi-Home-Bridge** to HomeKit in the native way, like you would add a commercial product to you local HomeKit network. The setup key is derived from the Wifi MAC of your ESP32 to easily allow many ESP32 to be used as a HomeKit bridge in your local network. Besides the driver will also manage up to four relays and sync them with HomeKit. There is nothing more to configure, the driver will automatically translate the data packets back and forth.  
+If activated at compile time the driver will start the HAP core (= the main task of the HomeKit framework) after succesfully reading a valid **mi32cfg file** after the start. It will create a 'bridge accessory' presenting all configured BLE devices to HomeKit. You can add the ESP32 as such a **Mi-Home-Bridge** to HomeKit in the native way, like you would add a commercial product to you local HomeKit network. The setup key is derived from the Wifi MAC of your ESP32 to easily allow many ESP32 to be used as a HomeKit bridge in your local network. Besides the driver will also manage up to four relays and sync them with HomeKit. There is nothing more to configure, the driver will automatically translate the data packets back and forth.  
 It just works ... except, when it does not.
 
 !!! danger "Known issues"
@@ -263,42 +259,49 @@ It just works ... except, when it does not.
 
 The driver provides two Berry classes to allow extensions and interactions with the sensors. It is also possible to write generic BLE functions unrelated to Xiaomi sensos.  
   
-To access and modify the Xiaomio sensor data the **MI32** class is provided.  
+### MI32 class
+To access and modify the Xiaomio sensor data the `MI32` class is provided.  
 First we need an instance, like so:  
 `m = MI32()` 
   
-We have the following methods, which are chosen to be able to replace the old commands MI32Battery, MI32Unit and MI32Time.  
+We have the following methods, which are chosen to be able to replace the old commands MI32Battery, MI32Unit and MI32Time (using instance `m`):  
+
+- `m.devices()`: returns the number of monitored Xiaomi devices
+- `m.get_name(x)`: returns a string with the sensor name (internal name of the driver) at slot x in the internal sensor array of the driver
+- `m.get_MAC(x)`: returns a byte buffer (6 bytes) representing the MAC at slot x in the internal sensor array of the driver
+- `m.set_bat(x,v)`:  sets the battery value to v at slot x in the internal sensor array of the driver
+- `m.set_hum(x,v)`:  sets the humidity value to v at slot x in the internal sensor array of the driver
+- `m.set_temp(x,v)`:  sets the temperature value to v at slot x in the internal sensor array of the driver
   
-(Example using instance `m`)  
-`m.devices()`returns the number of monitored Xiaomi devices  
-`m.get_name(x)`returns a string with the sensor name (internal name of the driver) at slot x in the internal sensor array of the driver  
-`m.get_MAC(x)`returns a byte buffer (6 bytes) representing the MAC at slot x in the internal sensor array of the driver  
-`m.set_bat(x,v)` sets the battery value to v at slot x in the internal sensor array of the driver  
-`m.set_hum(x,v)` sets the humidity value to v at slot x in the internal sensor array of the driver  
-`m.set_temp(x,v)` sets the temperature value to v at slot x in the internal sensor array of the driver  
+### BLE class
   
-For generic BLE access we have **BLE**, which is used as before.  
+For generic BLE access we have `BLE`, which is instantiated as before.  
 `ble = BLE()`
   
 To simplify BLE access this works in the form of state machine, where you have to set some properties and then finally lauch an operation. Besides we have two callback mechanisms for listening to advertisements and active sensor connections. The latter need a byte buffer in Berry for data exchange and a Berry function as the callback.  
 To listen to advertisements inside a class (that could be a driver) we could initialize like that:
 
-```
-var ble, cbp, buf
-def init()
-    self.buf = bytes(-64)
-    self.cbp = tasmota.gen_cb(/-> self.cb())
-    self.ble = BLE()
-    self.ble.adv_cb(self.cbp,self.buf)
-end
+!!! example "Simple Advertisement Listener"
 
-def cb()
-  print(buf) # simply prints out the byte buffer of an advertisement packet
-end
-```
+  ```python
+  var ble, cbp, buf
+  def init()
+      self.buf = bytes(-64)
+      self.cbp = tasmota.gen_cb(/-> self.cb())
+      self.ble = BLE()
+      self.ble.adv_cb(self.cbp,self.buf)
+  end
 
+  def cb()
+    print(buf) # simply prints out the byte buffer of an advertisement packet
+  end
+  ```
+
+To stop listening call:  
+`self.ble.adv_cb(0)`
+  
 We just have to provide a pointer to a (callback) function and a byte buffer.  The returned data in the byte buffer uses the following proprietary format:  
-```
+```haskell
 6 bytes - MAC
 2 bytes - SVC
 1 byte  - RSSI
@@ -312,7 +315,7 @@ if(no service data):
 
   
 Communicating via connections is a bit more complex. We have to start with a callback function and a byte buffer again.  
-```
+```python
 ble = BLE()
 cbuf = bytes(-64)
 
@@ -323,59 +326,66 @@ cbp = tasmota.gen_cb(cb)
 ble.conn_cb(cbp,cbuf)
 ```
   
-Set the MAC of ther device:  
-`ble.set_MAC(mac)` where mac is a 6-byte-buffer  
+Internally this creates a context, that can be modified with the follwing methods:
+  
+Set the MAC of the device we want to connect to:  
+`ble.set_MAC(mac)`: where mac is a 6-byte-buffer  
   
 Set service and characteristic:  
-`ble.set_svc(string)` - where string is in the form of a 16-Bit, 32-Bit or 128-Bit service uuid.  
-`ble.set_chr(string)` - where string is in the form of a 16-Bit, 32-Bit or 128-Bit service uuid.  
+`ble.set_svc(string)`: where string is in the form of a 16-Bit, 32-Bit or 128-Bit service uuid  
+`ble.set_chr(string)`: where string is in the form of a 16-Bit, 32-Bit or 128-Bit characteristic uuid  
 
-Finally run the with the specified properties and (if you read something) have everything prepared in the callback function. 
-`ble.run(operation)` - where operation is a number, that represents an operation in a proprietary format. Current implemention disconnects after every operation.   
-* 11 - read  
-* 12 - write  
-* 13 - notify read  
+Finally run the with the specified properties and (if you read something) have everything prepared in the callback function: 
+`ble.run(operation)`: where operation is a number, that represents an operation in a proprietary format. Current implemention disconnects after every operation:
+
+- 11 - read  
+- 12 - write  
+- 13 - notify read  
   
 The buffer format for reading and writing is in the format:
-1 byte  - length of data in bytes  
-n bytes - data  
+```
+1 byte  - length of data in bytes
+n bytes - data
+```
 
 Here is an example for setting the time of a sensor as a replacement for the old MI32Time command:  
-```
-ble = BLE()
-m = MI32()
-sl = 0
+!!! example "MI32Time in Berry"
 
-cbuf = bytes(-64)
-def cb()
-  # nothing to be done here
-end
+  ```python
+  ble = BLE()
+  m = MI32()
+  sl = 0
 
-cbp = tasmota.gen_cb(cb)
-ble.conn_cb(cbp,cbuf)
+  cbuf = bytes(-64)
+  def cb()
+    # nothing to be done here
+  end
 
-def SetMACfromSlot(slot)
-    if slot+1>m.devices()
-        return "out of bounds"
-    end
-    sl = slot
-    var _m = m.get_MAC(slot)
-    ble.set_MAC(_m)
-end
+  cbp = tasmota.gen_cb(cb)
+  ble.conn_cb(cbp,cbuf)
 
-def MI32Time(slot)
-    SetMACfromSlot(slot)
-    ble.set_svc("EBE0CCB0-7A0A-4B0C-8A1A-6FF2997DA3A6")
-    ble.set_chr("EBE0CCB7-7A0A-4B0C-8A1A-6FF2997DA3A6")
-    cbuf[0] = 5
-    var t = tasmota.rtc()
-    var utc = t.item("utc")
-    var tz = t.item("timezone")/60
-    cbuf.set(1,utc,4)
-    cbuf.set(5,tz,1)
-    ble.run(12)
-end
-```
+  def SetMACfromSlot(slot)
+      if slot+1>m.devices()
+          return "out of bounds"
+      end
+      sl = slot
+      var _m = m.get_MAC(slot)
+      ble.set_MAC(_m)
+  end
+
+  def MI32Time(slot)
+      SetMACfromSlot(slot)
+      ble.set_svc("EBE0CCB0-7A0A-4B0C-8A1A-6FF2997DA3A6")
+      ble.set_chr("EBE0CCB7-7A0A-4B0C-8A1A-6FF2997DA3A6")
+      cbuf[0] = 5
+      var t = tasmota.rtc()
+      var utc = t.item("utc")
+      var tz = t.item("timezone")/60
+      cbuf.set(1,utc,4)
+      cbuf.set(5,tz,1)
+      ble.run(12)
+  end
+  ```
 
 
 
