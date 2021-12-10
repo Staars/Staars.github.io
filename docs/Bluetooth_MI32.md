@@ -153,7 +153,7 @@ You can save them with command `MI32CFG`, which will create a JSON-file named 'm
 After a fresh install you can simply create a file in the root folder of the flash file system with the name 'mi32cfg' and paste the JSON into it. Save it and reboot.
 
 3. Adding sensors including the keys directly on this page  
-It is recommended to paste the data of 'mi32cfg' into the next textfield, if you already have one. After that press IMPORT CFG. The config will get parsed and presented in a table.  
+It is recommended to paste the data of 'mi32cfg' into the next textfield, if you already have one. After that press IMPORT MI32CFG. The config will get parsed and presented in a table.  
   
 ### MI32CFG Importer - Web App
 
@@ -332,10 +332,10 @@ Set the MAC of the device we want to connect to:
 `ble.set_MAC(mac)`: where mac is a 6-byte-buffer  
   
 Set service and characteristic:  
-`ble.set_svc(string)`: where string is in the form of a 16-Bit, 32-Bit or 128-Bit service uuid  
-`ble.set_chr(string)`: where string is in the form of a 16-Bit, 32-Bit or 128-Bit characteristic uuid  
+`ble.set_svc(string)`: where string is a 16-Bit, 32-Bit or 128-Bit service uuid  
+`ble.set_chr(string)`: where string is a 16-Bit, 32-Bit or 128-Bit characteristic uuid  
 
-Finally run the with the specified properties and (if you want to get data back to Berry) have everything prepared in the callback function: 
+Finally run the context with the specified properties and (if you want to get data back to Berry) have everything prepared in the callback function: 
 `ble.run(operation)`: where operation is a number, that represents an operation in a proprietary format. Current implemention disconnects after every operation:
 
 - 11 - read  
