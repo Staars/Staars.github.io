@@ -1,6 +1,6 @@
 # MI32  
   
-The MI32-driver focuses on the passive observation of BLE sensors of the Xiaomi/Mijia universe, thus only needing a small memory footprint. This allows to additionally run a dedicated software bridge to Apples HomeKit with very few additional configuration steps. Even Berry can be used in parallel.
+The MI32-driver focuses on the passive observation of BLE sensors of the Xiaomi/Mijia universe, thus only needing a small memory footprint. This allows to additionally run a dedicated software bridge to Apples HomeKit with very few additional configuration steps. Berry can be used in parallel.
 
    
 ## Tasmota and BLE-sensors
@@ -131,7 +131,7 @@ active: data is received via bidrectional connection to the sensor
 The encrypting devices will start to send advertisements with encrypted sensor data after pairing it with the official Xiaomi app. Out-of-the-box the sensors do only publish a static advertisement.  
 It is possible to do a pairing and get the necessary decryption key ("bind_key") right here in the Wiki. This method uses the same code base as the first published working example: https://atc1441.github.io/TelinkFlasher.html  
 This project also provides a custom firmware for the LYWSD03MMC, which then becomes an ATC and is supported by Tasmota too. Default ATC-setting will drain the battery more than stock firmware, because of very frequent data sending.  
-This key and the corresponding MAC of the sensor can be injected with the MI32key-command (or NRFMJYD2S), but the new and recommended option is tu use a **mi32cfg file**.
+This key and the corresponding MAC of the sensor can be injected with the MI32key-command (or NRFMJYD2S), but the new and recommended option is tu use a **mi32cfg** file.
 
 It is still possible to save the whole config as RULE like that:  (not recommended anymore!)
   
@@ -155,7 +155,7 @@ After a fresh install you can simply create a file in the root folder of the fla
 3. Adding sensors including the keys directly on this page  
 It is recommended to paste the data of 'mi32cfg' into the next textfield, if you already have one. After that press IMPORT CFG. The config will get parsed and presented in a table.  
   
-### MI32CFG Importer
+### MI32CFG Importer - Web App
 
 <p>MI32CFG <span id='importedDev'>- nothing imported yet</span></p>
 <input size="56" type="text" id="result_config" value="" placeholder="paste your mi32cfg here"><br>
@@ -179,7 +179,7 @@ After that you can add more sensors with the following Bind Key Generator, which
 After succesful pairing a sensor in the next step or simply connecting to a non-encrypting sensor, the JSON in the textfield above will be update with the added new sensor at the bottom. 
 You can copy-paste the new JSON via the Web-GUI to the mi32cfg file on the ESP32 or save it elsewhere. For adding more sensors, repeat the whole procedure after refreshing the site (after saving your data!!).  
 
-### Bind Key Generator  
+### Bind Key Generator - Web App  
 
 <div id='bind_key_section'>
 99% of the work was done by: https://atc1441.github.io/TelinkFlasher.html !!  
@@ -226,24 +226,24 @@ MAC:
 
 Command|Parameters
 :---|:---
-MI32Cfg<a id="mi32cfg"></a>|Saves current sensor list as **mi32cfg file** to the flash of the ESP32. After reboot only the saved drivers will be observed, no unknown drivers will be added. A valid config file is mandatory for HomeKit in this driver.
+MI32Cfg<a id="mi32cfg"></a>|Saves current sensor list as **mi32cfg** file to the flash of the ESP32. After reboot only the saved drivers will be observed, no unknown drivers will be added. A valid config file is mandatory for HomeKit in this driver.
 MI32Key<a id="mi32key"></a>| Set a "bind_key" for a MAC-address to decrypt sensor data (LYWSD03MMC, MJYD2S). The argument is a 44 uppercase characters long string, which is the concatenation of the bind_key and the corresponding MAC.<BR>`<00112233445566778899AABBCCDDEEFF>` (32 characters) = bind_key<BR>`<112233445566>` (12 characters) = MAC of the sensor<BR>`<00112233445566778899AABBCCDDEEFF112233445566>` (44 characters)= final string
 MI32Option0<a id="mi32option"></a>|`0` = sends only recently received sensor data<br>`1` = aggregates all recent sensors data types
 MI32Option1|`0` = shows full sensor data at Teleperiod<br>`1` = shows no sensor data at Teleperiod
 MI32Option2|`0` = sensor data only at Teleperiod (_default_)<br>`1` = direct bridging of BLE data to MQTT messages
-MI32Option3|`0` = do not add new sensors, which is set after a valid **mi32cfg file** is parsed after boot (_default_)<br>`1` = turn on auto-adding of new sensors again
+MI32Option3|`0` = do not add new sensors, which is set after a valid **mi32cfg** file is parsed after boot (_default_)<br>`1` = turn on auto-adding of new sensors again
 
 !!! tip 
 If you really want to read battery for LYWSD02, Flora and CGD1, consider doing it in Berry.
 
 
 !!! tip 
-If you want to add a new BLE sensor to your config on the device, use `MI32option3 1` to add the new sensor by catching a packet. Then use `MI32Cfg` to save the new config on flash.
+If you want to add a new BLE sensor to your config on the device, use `MI32option3 1` to add the new sensor by catching a BLE packet. Then use `MI32Cfg` to save the new config on flash.
   
 
 ## HomeKit Bridge
   
-If activated at compile time the driver will start the HAP core (= the main task of the HomeKit framework) after succesfully reading a valid **mi32cfg file** after the start. It will create a 'bridge accessory' presenting all configured BLE devices to HomeKit. You can add the ESP32 as such a **Mi-Home-Bridge** to HomeKit in the native way, like you would add a commercial product to you local HomeKit network. The setup key is derived from the Wifi MAC of your ESP32 to easily allow many ESP32 to be used as a HomeKit bridge in your local network. Besides the driver will also manage up to four relays and sync them with HomeKit. There is nothing more to configure, the driver will automatically translate the data packets back and forth.  
+If activated at compile time the driver will start the HAP core (= the main task of the HomeKit framework) after succesfully reading a valid **mi32cfg** file after the start. It will create a 'bridge accessory' presenting all configured BLE devices to HomeKit. You can add the ESP32 as such a **Mi-Home-Bridge** to HomeKit in the native way, like you would add a commercial product to you local HomeKit network. The setup key is derived from the Wifi MAC of your ESP32 to easily allow many ESP32 to be used as a HomeKit bridge in your local network. Besides the driver will also manage up to four relays and sync them with HomeKit. There is nothing more to configure, the driver will automatically translate the data packets back and forth.  
 It just works ... except, when it does not.
 
 !!! danger "Known issues"
@@ -257,10 +257,10 @@ It just works ... except, when it does not.
    
 ## Berry support  
 
-The driver provides two Berry classes to allow extensions and interactions with the sensors. It is also possible to write generic BLE functions unrelated to Xiaomi sensos.  
+The driver provides two Berry classes to allow extensions and interactions with the sensors. It is also possible to write generic BLE functions unrelated to Xiaomi sensors.  
   
 ### MI32 class
-To access and modify the Xiaomio sensor data the `MI32` class is provided.  
+To access and modify the Xiaomi sensor data the `MI32` class is provided.  
 First we need an instance, like so:  
 `m = MI32()` 
   
@@ -278,7 +278,7 @@ We have the following methods, which are chosen to be able to replace the old co
 For generic BLE access we have `BLE`, which is instantiated as before.  
 `ble = BLE()`
   
-To simplify BLE access this works in the form of state machine, where you have to set some properties and then finally lauch an operation. Besides we have two callback mechanisms for listening to advertisements and active sensor connections. The latter need a byte buffer in Berry for data exchange and a Berry function as the callback.  
+To simplify BLE access this works in the form of state machine, where you have to set some properties and then finally launch an operation. Besides we have two callback mechanisms for listening to advertisements and active sensor connections. Both need a byte buffer in Berry for data exchange and a Berry function as the callback.  
 To listen to advertisements inside a class (that could be a driver) we could initialize like that:
 
 !!! example "Simple Advertisement Listener"
@@ -335,7 +335,7 @@ Set service and characteristic:
 `ble.set_svc(string)`: where string is in the form of a 16-Bit, 32-Bit or 128-Bit service uuid  
 `ble.set_chr(string)`: where string is in the form of a 16-Bit, 32-Bit or 128-Bit characteristic uuid  
 
-Finally run the with the specified properties and (if you read something) have everything prepared in the callback function: 
+Finally run the with the specified properties and (if you want to get data back to Berry) have everything prepared in the callback function: 
 `ble.run(operation)`: where operation is a number, that represents an operation in a proprietary format. Current implemention disconnects after every operation:
 
 - 11 - read  
@@ -396,3 +396,4 @@ Here is an example for setting the time of a sensor as a replacement for the old
 *[mDNS]: multicast DNS
 *[IGMP]: Internet Group Management Protocol
 *[BLE]: Bluetooth Low Energy
+*[Berry]: Berry Script Language
