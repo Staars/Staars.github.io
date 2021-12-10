@@ -335,7 +335,7 @@ Set service and characteristic:
 `ble.set_svc(string)`: where string is a 16-Bit, 32-Bit or 128-Bit service uuid  
 `ble.set_chr(string)`: where string is a 16-Bit, 32-Bit or 128-Bit characteristic uuid  
 
-Finally run the context with the specified properties and (if you want to get data back to Berry) have everything prepared in the callback function: 
+Finally run the context with the specified properties and (if you want to get data back to Berry) have everything prepared in the callback function:  
 `ble.run(operation)`: where operation is a number, that represents an operation in a proprietary format. Current implemention disconnects after every operation:
 
 - 11 - read  
