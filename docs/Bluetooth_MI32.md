@@ -303,6 +303,7 @@ To stop listening call:
 We just have to provide a pointer to a (callback) function and a byte buffer.  The returned data in the byte buffer uses the following proprietary format:  
 ```haskell
 6 bytes - MAC
+1 byte - address type 
 2 bytes - SVC
 1 byte  - RSSI
 1 byte  - length of service data in bytes (maybe zero!!)
@@ -319,17 +320,30 @@ Communicating via connections is a bit more complex. We have to start with a cal
 ble = BLE()
 cbuf = bytes(-64)
 
-def cb()
+def cb(error)
 end
 
 cbp = tasmota.gen_cb(cb)
 ble.conn_cb(cbp,cbuf)
 ```
   
+Error codes:
+
+- 0 - no error
+- -1 - connection error
+- -2 - did not get service
+- -3 - did not get characteristic
+- -4 - could not read value
+- -5 - characteristic can not notify
+- -6 - characteristic not writable
+- -7 - did not write value
+- -8 - timeout: did not read on notify
+
+  
 Internally this creates a context, that can be modified with the follwing methods:
   
 Set the MAC of the device we want to connect to:  
-`ble.set_MAC(mac)`: where mac is a 6-byte-buffer  
+`ble.set_MAC(mac,type)`: where mac is a 6-byte-buffer, type is optional 0-3, default is 0
   
 Set service and characteristic:  
 `ble.set_svc(string)`: where string is a 16-Bit, 32-Bit or 128-Bit service uuid  
@@ -342,7 +356,7 @@ Finally run the context with the specified properties and (if you want to get da
 - 12 - write  
 - 13 - notify read  
   
-The buffer format for reading and writing is in the format:
+The buffer format for reading and writing is in the format (lenth - data):
 ```
 1 byte  - length of data in bytes
 n bytes - data
