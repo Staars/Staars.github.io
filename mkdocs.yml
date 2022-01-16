@@ -106,8 +106,6 @@ markdown_extensions:
 extra_css:
   - 'assets/css/anchor-fix.css'
 
-extra_javascript:
-  - 'extra_javascript/bindkey.js'
 
 nav:
   - Home:
