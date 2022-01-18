@@ -22,20 +22,20 @@
 
 
     var importedJSON, finalJSON;
-    let supported_mi_devices = {"055b":{"NAME":"LYWSD03","sensor":["s"],"data":['t','h','b'],"encrypt":1,"img":"../_media/bluetooth/LYWSD03MMC.png"},
-                                   "0387":{"NAME":"MHOC401","sensor":["s"],"data":['t','h','b'],"encrypt":1,"img":"../_media/bluetooth/MHO-C401.png"},
-                                   "01aa":{"NAME":"LYWSDCGQ","sensor":["s"],"data":['t','h','b'],"encrypt":1,"img":"../_media/bluetooth/MHO-C303.png"},
-                                   "0b48":{"NAME":"CGG1","sensor":["s"],"data":['t','h','b'],"encrypt":1,"img":"../_media/bluetooth/CGG1.png"},
-                                   "066f":{"NAME":"CGDK2","sensor":["s"],"data":['t','h','b'],"encrypt":1,"img":"../_media/bluetooth/MHO-C303.png"},
-                                   "045b":{"NAME":"LYWSD02","sensor":["s"],"data":['t','h','b'],"encrypt":0,"img":"../_media/bluetooth/LYWDS02.png"},
-                                   "0a1c":{"NAME":"ATC","sensor":["s"],"data":['t','h','b'],"encrypt":0,"img":"../_media/bluetooth/LYWSD03MMC.png"},
-                                   "0576":{"NAME":"CGD1","sensor":["s"],"data":['t','h','b'],"encrypt":1,"img":"../_media/bluetooth/CGD1.png"},
-                                   "06d3":{"NAME":"MHOC303","sensor":["s"],"data":['t','h','b'],"encrypt":0,"img":"../_media/bluetooth/MHO-C303.png"},
-                                   "0153":{"NAME":"YEERC","sensor":["s"],"data":['bt'],"encrypt":0,"img":"../_media/bluetooth/yeerc.png"},
-                                   "03dd":{"NAME":"NLIGHT","sensor":["s"],"data":['m'],"encrypt":0,"img":"../_media/bluetooth/nlight.png"},
-                                   "098b":{"NAME":"MCCGQ02","sensor":["s"],"data":['t','h','b'],"encrypt":1,"img":"../_media/bluetooth/MCCGQ02HL.png"},
-                                   "0863":{"NAME":"SJWS01L","sensor":["s"],"data":['bt','f','b'],"encrypt":1,"img":"../_media/bluetooth/SJWS01L.png"},
-                                   "07f6":{"NAME":"MJYD02S","sensor":["s","b"],"data":['it','i','b','l'],"encrypt":1,"img":"../_media/bluetooth/mjyd2s.png"}
+    let supported_mi_devices = {"055b":{"NAME":"LYWSD03","AdName":"LYWSD03MMC","sensor":["s"],"data":['t','h','b'],"encrypt":1,"img":"../_media/bluetooth/LYWSD03MMC.png"},
+                                   "0387":{"NAME":"MHOC401","AdName":"MHO-C401","sensor":["s"],"data":['t','h','b'],"encrypt":1,"img":"../_media/bluetooth/MHO-C401.png"},
+                                   "01aa":{"NAME":"LYWSDCGQ","AdName":"","sensor":["s"],"data":['t','h','b'],"encrypt":1,"img":"../_media/bluetooth/MHO-C303.png"},
+                                   "0b48":{"NAME":"CGG1","AdName":"","sensor":["s"],"data":['t','h','b'],"encrypt":1,"img":"../_media/bluetooth/CGG1.png"},
+                                   "066f":{"NAME":"CGDK2","AdName":"","sensor":["s"],"data":['t','h','b'],"encrypt":1,"img":"../_media/bluetooth/MHO-C303.png"},
+                                   "045b":{"NAME":"LYWSD02","AdName":"LYWSD02MMC","sensor":["s"],"data":['t','h','b'],"encrypt":0,"img":"../_media/bluetooth/LYWDS02.png"},
+                                   "0a1c":{"NAME":"ATC","AdName":"","sensor":["s"],"data":['t','h','b'],"encrypt":0,"img":"../_media/bluetooth/LYWSD03MMC.png"},
+                                   "0576":{"NAME":"CGD1","AdName":"Qingping Alarm Cloc","sensor":["s"],"data":['t','h','b'],"encrypt":1,"img":"../_media/bluetooth/CGD1.png"},
+                                   "06d3":{"NAME":"MHOC303","AdName":"MHO-C303","sensor":["s"],"data":['t','h','b'],"encrypt":0,"img":"../_media/bluetooth/MHO-C303.png"},
+                                   "0153":{"NAME":"YEERC","AdName":"YEE-RC","sensor":["s"],"data":['bt'],"encrypt":0,"img":"../_media/bluetooth/yeerc.png"},
+                                   "03dd":{"NAME":"NLIGHT","AdName":"NLIGHT","sensor":["s"],"data":['m'],"encrypt":0,"img":"../_media/bluetooth/nlight.png"},
+                                   "098b":{"NAME":"MCCGQ02","AdName":"standard demo","sensor":["s"],"data":['t','h','b'],"encrypt":1,"img":"../_media/bluetooth/MCCGQ02HL.png"},
+                                   "0863":{"NAME":"SJWS01L","AdName":"","sensor":["s"],"data":['bt','f','b'],"encrypt":1,"img":"../_media/bluetooth/SJWS01L.png"},
+                                   "07f6":{"NAME":"MJYD02S","AdName":"","sensor":["s","b"],"data":['it','i','b','l'],"encrypt":1,"img":"../_media/bluetooth/mjyd2s.png"}
                                    };
     let device_tips = {"055b":"No special workarounds needed.","07f6":"Rapidly move the hidden switch <br>for device reset before pairing.",
                       "098b":"Use Pair instantly.","7605":"Use Pair instantly.",
@@ -121,10 +121,55 @@
             doConnect();
         }).catch(handleError);
     }
+
+    function fallbackWithoutFullFeatures(device){
+        document.getElementById("MAC").value = "Unknown";
+        for(var pid in supported_mi_devices){
+          // console.log(pid);
+          if(supported_mi_devices[pid].AdName == device.name){
+            current_device.PID = pid;
+            current_device.encrypt  = supported_mi_devices[pid].encrypt;
+            current_device.name = supported_mi_devices[pid].NAME;
+            current_device.MAC = 0; //unknown
+
+            document.getElementById("device_name").innerHTML = supported_mi_devices[pid].NAME;
+            document.querySelectorAll('.connected').forEach(function(el) {
+            el.style.display = '';});
+            if(pid in device_tips){
+              document.getElementById("device_tip").innerHTML = device_tips[pid]
+            }
+            if(supported_mi_devices[pid].encrypt == 0) {
+              document.getElementById("mi_bind_key").value = 'no encryption';
+            }
+            var _img = document.createElement("img");
+            _img.src = supported_mi_devices[pid].img;
+            _img.width = 200;
+            document.getElementById("connected_device").appendChild(_img);
+            return;
+          }
+          // else{
+          //   console.log(supported_mi_devices[pid].AdName);
+          //   console.log(device.name);
+          // }
+        }
+        current_device.PID = 0; //unknown
+        current_device.encrypt  = 1; //we pretend, so we can try
+        current_device.name = device.name; // not so important for the config file
+        current_device.MAC = 0; //unknown
+        document.getElementById("device_name").innerHTML = 'unknown device';
+    }
     
     function catchAdvertisement(device) {
       const abortController = new AbortController();
-      device.watchAdvertisements();
+      try{
+        device.watchAdvertisements();
+      }
+      catch{
+        addLog("Please enable experimental-web-platform-features in chrome://flags/");
+        fallbackWithoutFullFeatures(device);
+        return;
+      }
+      
       device.addEventListener('advertisementreceived', (event) => {
         addLog('Received advertisement from "' + device.name + '"...');
         event.serviceData.forEach((valueDataView) => {
@@ -177,7 +222,7 @@
         addClog(bytesToHex(buffer), device, event);
         })
         abortController.abort();
-      }, { once: false });
+      }, { once: true });
     }
     
     function parse_MAC(buffer, pid){
