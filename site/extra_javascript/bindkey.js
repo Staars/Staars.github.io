@@ -239,7 +239,7 @@
                         temp = temp/100;
                         var hum = value.getUint8(2);
                         var tempTempString = "Temp/Humi/Batt: " + temp + "°C / " + hum + "% / " + batt + "V";
-                        document.getElementById("tempHumiData").innerHTML = tempTempString;
+                        // document.getElementById("tempHumiData").innerHTML = tempTempString;
                         addClog(tempTempString);
                     },{ once: true });
                     miAuthorization()
