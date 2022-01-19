@@ -928,3 +928,60 @@ window.onload = function() {
         document.getElementById("bind_key_section").innerHTML = 'Bluetooth not supported by browser!! Try Chrome, Opera or Edge.';
     }
 }
+
+// QRCode section
+
+var qrcode = new QRCode(document.getElementById("qrcode"), {
+    width : 100,
+    height : 100,
+    useSVG: true
+});
+
+function makeQRCode (input) {
+    if(event.key === 'Enter') {
+        const code = getCodeFromMAC(input.value);
+        console.log(makeURI(code));
+        qrcode.makeCode(makeURI(code),{correctLevel:'Q',version:2,margin:0});
+    }
+}
+
+function makeURI (code){
+    var setupUri = {
+      category: 2, //bridge acc
+      password: code,
+      setupId: "MI32",
+      version: 0,
+      reserved: 0,
+      flags: 2
+    }
+
+    let payload = BigInt(0);
+    payload = payload | BigInt(setupUri.version &0x7);
+    payload = payload << BigInt(4);
+    payload = payload | BigInt(setupUri.reserved &0xf); // reserved bits
+    payload = payload << BigInt(8);
+    payload = payload | BigInt(setupUri.category &0xff);
+    payload = payload << BigInt(4);
+    payload = payload | BigInt(setupUri.flags &0xf);
+    payload = BigInt(payload) << BigInt(27);
+    payload = BigInt(payload) | BigInt(Number(setupUri.password) &0x7fffffff);
+    const payloadBase36 = payload.toString(36).toUpperCase().padStart(9,'0');
+    return `X-HM://${payloadBase36}${setupUri.setupId}`;
+}
+
+
+
+function 
+getCodeFromMAC(MACString) {
+  if (!(MACString.length ==12 || MACString.length ==17)) {
+      alert("No known MAC format");
+      return;
+  }
+
+  var mac = MACString.replace(/\W/ig,'');
+  console.log("MAC without colons:", mac);
+  mac = mac.replace(/[a-f0-1]/ig,'1');
+  var finalSetupCode =  mac.substr(0,3) + mac.substr(4,2) + mac.substr(7,3) ;
+  console.log("Setup Code HomeKit:",finalSetupCode);
+  return finalSetupCode;
+}
