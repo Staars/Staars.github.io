@@ -192,8 +192,9 @@ You can copy-paste the new JSON via the Web-GUI to the mi32cfg file on the ESP32
 <label for="instantPair"> Pair instantly</label>
 <input type="checkbox" id="instantPair"><br>
 <label for="namePrefix">BLE device name prefix filter(s)</label>
-<div id="MI32_status"></div>
 <input type="text" id="namePrefix" value="" placeholder="MHO-C401,LYWSD03"><br>
+<div id="MI32_status"></div>
+<div id="MI32_warning"></div>
 
 <button type="button" class="md-button md-button--primary connected" onclick="reConnect();">Reconnect</button>
 <button type="button" class="md-button md-button--primary connected" onclick="reload_page();">Reset Page</button>
@@ -206,15 +207,15 @@ You can copy-paste the new JSON via the Web-GUI to the mi32cfg file on the ESP32
 
 <div class="connected">
 <div id='connected_device'></div>
-Device known id:
+Device id:
 <input size="34" type="text" id="known_id" value="">
-Mi Token:
+&emsp;Mi Token:
 <input size="34" type="text" id="mi_token" value=""><br>
 Mi Bind Key:
 <input size="34" type="text" id="mi_bind_key" value="">
 MAC:
 <input size="34" type="text" id="MAC" value=""><br>
-<button type="button" class="md-button md-button--primary" onclick="sendRegister();">Do Activation</button><br>
+<button type="button" class="md-button md-button--primary" id="DoActivation" onclick="sendRegister();">Do Activation</button><br>
 </div>
 
 <button type="button" class="md-button md-button--primary"onclick="clearLog();">Clear Log</button><br>
