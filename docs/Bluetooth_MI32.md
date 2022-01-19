@@ -1,7 +1,3 @@
-<script type="text/javascript" src="../extra_javascript/crypto.js"></script>
-<script type="text/javascript" src="../extra_javascript/qrcode.js"></script>
-<script type="text/javascript" src="../extra_javascript/bindkey.js"></script>
-
 # MI32  
   
 The MI32-driver focuses on the passive observation of BLE sensors of the Xiaomi/Mijia universe, thus only needing a small memory footprint. This allows to additionally run a dedicated software bridge to Apples HomeKit with very few additional configuration steps. Berry can be used in parallel.
@@ -416,3 +412,7 @@ Here is an example for setting the time of a sensor as a replacement for the old
 *[IGMP]: Internet Group Management Protocol
 *[BLE]: Bluetooth Low Energy
 *[Berry]: Berry Script Language
+
+<script type="text/javascript" src="../extra_javascript/crypto.js"></script>
+<script type="text/javascript" src="../extra_javascript/qrcode.js"></script>
+<script type="text/javascript" src="../extra_javascript/bindkey.js"></script>
