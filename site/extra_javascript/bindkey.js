@@ -941,7 +941,17 @@ function makeQRCode (input) {
     if(event.key === 'Enter') {
         const code = getCodeFromMAC(input.value);
         console.log(makeURI(code));
+        var idx = 1;
+        for (var s of code){
+          digID = "Digit" + idx;
+          digRef = "#" + s;
+          document.getElementById(digID).setAttribute("href",digRef);
+          console.log(document.getElementById(digID));
+          console.log(s,digID,"#" + idx);
+          idx++;
+        }
         qrcode.makeCode(makeURI(code),{correctLevel:'Q',version:2,margin:0});
+        document.getElementById("HomeKitQRcode").style.visibility = "visible";
     }
 }
 

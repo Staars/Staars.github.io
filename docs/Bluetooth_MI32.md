@@ -259,7 +259,7 @@ It just works ... except, when it does not.
 <input size="20" type="text" id="WifiMAC" value="" onkeydown="makeQRCode(this)" placeholder="WiFi MAC of the ESP32"><br>
   
 
-<svg viewBox="0 0 400 540" id="HomeKitQRcode" xmlns="http://www.w3.org/2000/svg" style="max-width:20%">
+<svg viewBox="0 0 400 540" id="HomeKitQRcode" xmlns="http://www.w3.org/2000/svg" style="max-width:20%;visibility:hidden;">
 <defs>
 <symbol id="homekit" viewBox="0 0 130 120">
 <path d="m128.28 49.26-14.16-11.3v-20c0-1.46-.57-1.9-1.6-1.9h-8.94c-1.2 0-1.93.24-1.93 1.9v10L67.81 1.3a4.22 4.22 0 0 0-6.09 0L1.31 49.26c-2.13 1.67-1.53 4.1.83 4.1h11.14v61.1c0 2.77.83 4.34 2.6 5.04a7
@@ -298,14 +298,14 @@ d="M53.54 80.67h22.44c1 0 1.73-.34 1.73-1.8V60.73a3.34 3.34 0 0 0-1.23-2.67L65.9
 <rect fill="#000000" height="540" rx="20" width="400"/>
 <rect fill="#ffffff" height="530" rx="15" width="390" x="5" y="5"/>
 <use href="#homekit" height="120" width="130" x="24" y="30"/>
-<use href="#001" height="48" width="34" x="174" y="30"/>
-<use href="#002" height="48" width="34" x="228" y="30"/>
-<use href="#003" height="48" width="34" x="282" y="30"/>
-<use href="#004" height="48" width="34" x="336" y="30"/>
-<use href="#005" height="48" width="34" x="174" y="102"/>
-<use href="#006" height="48" width="34" x="228" y="102"/>
-<use href="#007" height="48" width="34" x="282" y="102"/>
-<use href="#008" height="48" width="34" x="336" y="102"/>
+<use href="#0" id="Digit1" height="48" width="34" x="174" y="30"/>
+<use href="#0" id="Digit2" height="48" width="34" x="228" y="30"/>
+<use href="#0" id="Digit3" height="48" width="34" x="282" y="30"/>
+<use href="#0" id="Digit4" height="48" width="34" x="336" y="30"/>
+<use href="#0" id="Digit5" height="48" width="34" x="174" y="102"/>
+<use href="#0" id="Digit6" height="48" width="34" x="228" y="102"/>
+<use href="#0" id="Digit7" height="48" width="34" x="282" y="102"/>
+<use href="#0" id="Digit8" height="48" width="34" x="336" y="102"/>
 <use href="#finalQRCode" height="340" width="340" x="30" y="175"/></svg>
 
 ## Berry support  
