@@ -234,12 +234,14 @@ MI32Option1|`0` = shows full sensor data at Teleperiod<br>`1` = shows no sensor 
 MI32Option2|`0` = sensor data only at Teleperiod (_default_)<br>`1` = direct bridging of BLE data to MQTT messages
 MI32Option3|`0` = do not add new sensors, which is set after a valid **mi32cfg** file is parsed after boot (_default_)<br>`1` = turn on auto-adding of new sensors again
 
-!!! tip 
-If you really want to read battery for LYWSD02, Flora and CGD1, consider doing it in Berry.
+!!! tip
+
+    If you really want to read battery for LYWSD02, Flora and CGD1, consider doing it in Berry.
 
 
-!!! tip 
-If you want to add a new BLE sensor to your config on the device, use `MI32option3 1` to add the new sensor by catching a BLE packet. Then use `MI32Cfg` to save the new config on flash.
+!!! tip
+
+    If you want to add a new BLE sensor to your config on the device, use `MI32option3 1` to add the new sensor by catching a BLE packet. Then use `MI32Cfg` to save the new config on flash.
   
 
 ## HomeKit Bridge
@@ -255,11 +257,14 @@ It just works ... except, when it does not.
 
     Although the driver does not write to the NVS section and the usage of a modified HAP framework (using a NVS wrapper) the behavior of Tasmota firmware upgrades is undefined with regards to a working HomeKit installation. Similar things can also happen using much bigger projects like "Homebridge". So it might be necessary to completely erase the Mi-Bridge from your "Home" in Homekit and doing a flash erase of the ESP32 after a firmware upgrade of the ESP32. It is recommend to first create a final mi32cfg file before you add the Mi-Home-Bridge to your "Home".
   
+### HomeKit QR-Code-Generator  - Web App
   
-<input size="20" type="text" id="WifiMAC" value="" onkeydown="makeQRCode(this)" placeholder="WiFi MAC of the ESP32"><br>
+This will generate a QR-Code based on the MAC address of the ESP32 which runs Tasmotas Homekit-Bridge. Use the camera of your iPhone or iPad to easily start the setup procedure.  
+  
+<input size="20" type="text" id="Wifi-MAC" value="" onkeydown="makeQRCode(this)" placeholder="WiFi MAC of the ESP32"><br>
   
 
-<svg viewBox="0 0 400 540" id="HomeKitQRcode" xmlns="http://www.w3.org/2000/svg" style="max-width:20%;visibility:hidden;">
+<svg viewBox="0 0 400 540" id="HomeKitQRcode" xmlns="http://www.w3.org/2000/svg" style="max-width:30%;visibility:hidden;height:0;">
 <defs>
 <symbol id="homekit" viewBox="0 0 130 120">
 <path d="m128.28 49.26-14.16-11.3v-20c0-1.46-.57-1.9-1.6-1.9h-8.94c-1.2 0-1.93.24-1.93 1.9v10L67.81 1.3a4.22 4.22 0 0 0-6.09 0L1.31 49.26c-2.13 1.67-1.53 4.1.83 4.1h11.14v61.1c0 2.77.83 4.34 2.6 5.04a7
@@ -383,14 +388,14 @@ ble.conn_cb(cbp,cbuf)
 Error codes:
 
 - 0 - no error
-- -1 - connection error
-- -2 - did not get service
-- -3 - did not get characteristic
-- -4 - could not read value
-- -5 - characteristic can not notify
-- -6 - characteristic not writable
-- -7 - did not write value
-- -8 - timeout: did not read on notify
+- 1 - connection error
+- 2 - did not get service
+- 3 - did not get characteristic
+- 4 - could not read value
+- 5 - characteristic can not notify
+- 6 - characteristic not writable
+- 7 - did not write value
+- 8 - timeout: did not read on notify
 
   
 Internally this creates a context, that can be modified with the follwing methods:

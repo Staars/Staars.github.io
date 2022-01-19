@@ -930,6 +930,7 @@ window.onload = function() {
 }
 
 // QRCode section
+// basically a port of: https://github.com/simongolms/homekit-qrcode ... Many Thanks!!!
 
 var qrcode = new QRCode(document.getElementById("qrcode"), {
     width : 100,
@@ -946,12 +947,11 @@ function makeQRCode (input) {
           digID = "Digit" + idx;
           digRef = "#" + s;
           document.getElementById(digID).setAttribute("href",digRef);
-          console.log(document.getElementById(digID));
-          console.log(s,digID,"#" + idx);
           idx++;
         }
         qrcode.makeCode(makeURI(code),{correctLevel:'Q',version:2,margin:0});
         document.getElementById("HomeKitQRcode").style.visibility = "visible";
+        document.getElementById("HomeKitQRcode").style.height = "";
     }
 }
 
