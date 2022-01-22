@@ -419,48 +419,394 @@ The buffer format for reading and writing is in the format (lenth - data):
 1 byte  - length of data in bytes
 n bytes - data
 ```
+  
+### Berry examples
 
-Here is an example for setting the time of a sensor as a replacement for the old MI32Time command:  
-!!! example "MI32Time in Berry"
+Here is an implementaion of the old MI32 commands:  
+!!! example "removed MI32 commands in Berry"
 
-  ```python
-  ble = BLE()
-  m = MI32()
-  sl = 0
+    ```python
+    ble = BLE()
+    m = MI32()
+    j = 0
+    sl = 0
 
-  cbuf = bytes(-64)
-  def cb()
-    # nothing to be done here
-  end
+    cbuf = bytes(-64)
+    def cb()
+        if j == 0
+            print(cbuf)
+        end
+        if j == 1
+            var temp = cbuf.get(1,2)/100.0
+            var hum = cbuf.get(3,1)*1.0
+            var bat = (cbuf.get(4,2)-2100)/12
+            m.set_temp(sl,temp)
+            m.set_hum(sl,hum)
+            m.set_bat(sl,bat)
+        end
+        if j == 4
+            var bat = cbuf.get(1,1)
+            m.set_bat(sl,bat)
+        end
+    end
 
-  cbp = tasmota.gen_cb(cb)
-  ble.conn_cb(cbp,cbuf)
+    cbp = tasmota.gen_cb(cb)
+    ble.conn_cb(cbp,cbuf)
 
-  def SetMACfromSlot(slot)
-      if slot+1>m.devices()
-          return "out of bounds"
-      end
-      sl = slot
-      var _m = m.get_MAC(slot)
-      ble.set_MAC(_m)
-  end
+    def SetMACfromSlot(slot)
+        if slot+1>m.devices()
+            return "out of bounds"
+        end
+        sl = slot
+        var _m = m.get_MAC(slot)
+        ble.set_MAC(_m)
+    end
 
-  def MI32Time(slot)
-      SetMACfromSlot(slot)
-      ble.set_svc("EBE0CCB0-7A0A-4B0C-8A1A-6FF2997DA3A6")
-      ble.set_chr("EBE0CCB7-7A0A-4B0C-8A1A-6FF2997DA3A6")
-      cbuf[0] = 5
-      var t = tasmota.rtc()
-      var utc = t.item("utc")
-      var tz = t.item("timezone")/60
-      cbuf.set(1,utc,4)
-      cbuf.set(5,tz,1)
-      ble.run(12)
-  end
-  ```
+    def MI32Time(slot)
+        SetMACfromSlot(slot)
+        ble.set_svc("EBE0CCB0-7A0A-4B0C-8A1A-6FF2997DA3A6")
+        ble.set_chr("EBE0CCB7-7A0A-4B0C-8A1A-6FF2997DA3A6")
+        cbuf[0] = 5
+        var t = tasmota.rtc()
+        var utc = t.item("utc")
+        var tz = t.item("timezone")/60
+        cbuf.set(1,utc,4)
+        cbuf.set(5,tz,1)
+        j = 0
+        ble.run(12)
+    end
+
+    def MI32Unit(slot,unit)
+        SetMACfromSlot(slot)
+        ble.set_svc("EBE0CCB0-7A0A-4B0C-8A1A-6FF2997DA3A6")
+        ble.set_chr("EBE0CCBE-7A0A-4B0C-8A1A-6FF2997DA3A6")
+        cbuf[0] = 1
+        cbuf[1] = unit
+        j = 0
+        ble.run(12)
+    end
+
+    def MI32Bat(slot)
+        SetMACfromSlot(slot)
+        var name = m.get_name(slot)
+        if name == "LYWSD03"
+            ble.set_svc("ebe0ccb0-7A0A-4B0C-8A1A-6FF2997DA3A6")
+            ble.set_chr("ebe0ccc1-7A0A-4B0C-8A1A-6FF2997DA3A6")
+            j = 1
+            ble.run(13)
+        end
+        if name == "MHOC401"
+            ble.set_svc("ebe0ccb0-7A0A-4B0C-8A1A-6FF2997DA3A6")
+            ble.set_chr("ebe0ccc1-7A0A-4B0C-8A1A-6FF2997DA3A6")
+            j = 1
+            ble.run(13)
+        end
+        if name == "LYWSD02"
+            ble.set_svc("ebe0ccb0-7A0A-4B0C-8A1A-6FF2997DA3A6")
+            ble.set_chr("ebe0ccc1-7A0A-4B0C-8A1A-6FF2997DA3A6")
+            j = 2
+            ble.run(11)
+        end
+        if name == "FLORA"
+            ble.set_svc("00001204-0000-1000-8000-00805f9b34fb")
+            ble.set_chr("00001a02-0000-1000-8000-00805f9b34fb")
+            j = 3
+            ble.run(11)
+        end
+        if name == "CGD1"
+            ble.set_svc("180F")
+            ble.set_chr("2A19")
+            j = 4
+            ble.run(11)
+        end
+    end
+    ```
+  
+#### More Examples
+
+??? example "MI32Scan"
+
+    ```python
+    beacons =[
+            #{"MAC":"112233445566","Timer":999},
+            #{"MAC":"778899aabbcc","Timer":999}
+            ]
+
+    ibeacons =  [
+                {"UID":0,"maj":0,"min":0}
+                ]
+
+    class BEACON : Driver
+        var ble, cbp, buf
+        var scan_timer, scan_result
 
 
+        def init()
+            self.buf = bytes(-64)
+            self.scan_timer = 0
+            self.scan_result = []
+            if size(beacons) > 0
+                for idx:0..size(beacons)-1
+                    var _tmp = beacons[idx]['MAC']
+                    print(_tmp)
+                    beacons[idx]['MAC'] = bytes(_tmp)
+                end
+            end
+            self.cbp = tasmota.gen_cb(/-> self.cb())
+            self.ble = BLE()
+            self.ble.adv_cb(self.cbp,self.buf)
+        end
 
+        def cb()
+            if self.scan_timer > 0
+                self.add_to_result()
+            end
+            self.check_beacons()
+            #self.check_ibeacons()
+        end
+
+        def add_to_result()
+            if size(self.scan_result) > 0
+                for i:0..size(self.scan_result)-1
+                    if self.buf[0..5] == self.scan_result[i]['MAC']
+                        #print('known entry')
+                        return
+                    end
+                end
+            end
+            var entry = {}
+            entry.insert('MAC',self.buf[0..5])
+            entry.insert('Type',self.buf[6])
+            var svc = self.buf.get(7,2)
+            entry.insert('SVC',svc)
+            var rssi = (255 - self.buf.get(9,1)) * -1
+            entry.insert('RSSI',rssi)
+            var len_s =  self.buf.get(10,1)
+            var len_c = 0
+            if len_s == 0 && svc == 0
+                len_c = self.buf.get(11,1)
+            end
+            if len_c != 0 
+                entry.insert('CID',self.buf.get(12,2))
+            else
+                entry.insert('CID',0)
+            end
+            self.scan_result.push(entry)
+            print(self.buf)
+        end
+
+        def check_beacons()
+            if size(beacons) > 0
+                for i:0..size(beacons)-1
+                    if self.buf[0..5] == beacons[i]['MAC']
+                        beacons[i]['Timer'] = 0
+                        print(beacons[i])
+                        return
+                    end
+                end
+            end
+        end
+
+        def check_ibeacons()
+            if self.buf.get(12,4) == 352452684
+                var uid = self.buf[16..31]
+                var maj = self.buf.get(32,2)
+                var min = self.buf.get(34,2)
+                var tx = self.buf.get(36,1)
+                print(uid)
+                print(maj)
+                print(min)
+                print(tx)
+                print(self.buf[32..36])
+            end
+        end
+
+        def count_up_time()
+            if size(beacons) > 0
+                for idx:0..size(beacons)-1
+                    beacons[idx]['Timer'] += 1
+                end
+            end
+        end
+
+        def show_scan()
+            import string
+            if size(self.scan_result) > 0
+                var msg = '{'
+                for i:0..size(self.scan_result)-1
+                    var entry = self.scan_result[i]
+                    var msg_e = string.format("{\"MAC\":\"%02X%02X%02X%02X%02X%02X\",\"Type\":%02X,\"SVC\":\"%04X\",\"CID\":\"%04X\",\"RSSI\":%i},",
+                    entry['MAC'][0],entry['MAC'][1],entry['MAC'][2],entry['MAC'][3],
+                    entry['MAC'][4],entry['MAC'][5],entry['Type'],entry['SVC'],entry['CID'],entry['RSSI'])
+                    msg += msg_e
+                end
+                msg += '}'
+                print(msg)
+            end
+        end
+
+        def every_second()
+            if self.scan_timer > 0
+                if self.scan_timer == 1
+                    self.show_scan()
+                end
+                self.scan_timer -= 1
+            end
+            if beacons.size(0) > 0
+                self.count_up_time()
+            end
+        end
+    end
+
+    beacon = BEACON()
+    tasmota.add_driver(beacon)
+
+    def scan(cmd, idx, payload, payload_json)
+        if int(payload) == 0
+            beacon.scan_result = []
+        end
+        beacon.scan_timer = int(payload)
+    end
+
+    tasmota.add_cmd('Mi32Scan', scan)
+    ```
+
+??? example "Govee desk lamp - pre-alpha"
+
+    ```python
+    lamps =[
+            {"MAC":"AABBCCDDEEFF"}
+            ]
+
+    class GOVEE : Driver
+        var ble, cbp, buf
+
+        def init()
+            if size(lamps) > 0
+                for idx:0..size(lamps)-1
+                    var _tmp = lamps[idx]['MAC']
+                    print(_tmp)
+                    lamps[idx]['MAC'] = bytes(_tmp)
+                end
+            end
+            self.buf = bytes(-21)
+            self.buf[0] = 20
+            self.buf[1] = 0x33
+            self.cbp = tasmota.gen_cb(/e-> self.cb(e))
+            self.ble = BLE()
+            self.ble.conn_cb(self.cbp,self.buf)
+        end
+
+        def cb(error)
+            if error == 0
+                print("success!")
+                return
+            end
+            print(error)
+        end
+
+        def chksum()
+            var cs = 0;
+            for i:1..19
+                cs ^= self.buf[i]
+            end
+            self.buf[20] = cs
+        end
+
+        def clr()
+            for i:2..19
+                self.buf[i] = 0
+            end
+        end
+
+        def writeBuf()
+            var _mac = lamps[0]['MAC']
+            print(_mac)
+            self.ble.set_MAC(_mac,1) # addrType: 1 (random)
+            self.ble.set_svc("00010203-0405-0607-0809-0a0b0c0d1910")
+            self.ble.set_chr("00010203-0405-0607-0809-0a0b0c0d2b11")
+            self.chksum()
+            print(self.buf)
+            self.ble.run(12) # op: 12 (write)
+        end
+
+        def every_second()
+        end
+    end
+
+    gv = GOVEE()
+    tasmota.add_driver(gv)
+
+    def gv_power(cmd, idx, payload, payload_json)
+        if int(payload) > 1
+            return 'error'
+        end
+        gv.clr()
+        gv.buf[2] = 1 # power cmd
+        gv.buf[3] = int(payload)
+        gv.writeBuf()
+    end
+
+    def gv_bright(cmd, idx, payload, payload_json)
+        if int(payload) > 255
+            return 'error'
+        end
+        gv.clr()
+        gv.buf[2] = 4 # brightness
+        gv.buf[3] = int(payload)
+        gv.writeBuf()
+    end
+
+    def gv_rgb(cmd, idx, payload, payload_json)
+        var rgb = bytes(payload)
+        print(rgb)
+        gv.clr()
+        gv.buf[2] = 5 # color
+        gv.buf[3] = 5 # manual ??
+        gv.buf[4] = rgb[3]
+        gv.buf[5] = rgb[0]
+        gv.buf[6] = rgb[1]
+        gv.buf[7] = rgb[2]
+        gv.writeBuf()
+    end
+
+    def gv_scn(cmd, idx, payload, payload_json)
+        gv.clr()
+        gv.buf[2] = 5 # color
+        gv.buf[3] = 4 # scene
+        gv.buf[4] = int(payload)
+        gv.writeBuf()
+    end
+
+    def gv_mus(cmd, idx, payload, payload_json)
+        var rgb = bytes(payload)
+        print(rgb)
+        gv.clr()
+        gv.buf[2] = 5 # color
+        gv.buf[3] = 1 # music
+        gv.buf[4] = rgb[0]
+        gv.buf[5] = 0
+        gv.buf[6] = rgb[1]
+        gv.buf[7] = rgb[2]
+        gv.buf[8] = rgb[3]
+        gv.writeBuf()
+    end
+
+
+    tasmota.add_cmd('gpower', gv_power) # only on/off
+    tasmota.add_cmd('bright', gv_bright) # brightness 0 - 255
+    tasmota.add_cmd('color', gv_rgb) #  color 00FF0000 - sometimes the last byte has to be set to something greater 00, usually it should be 00
+    tasmota.add_cmd('scene', gv_scn) # scene 0 - ?,
+    tasmota.add_cmd('music', gv_mus) # music 00 - 0f + color 000000   -- does not work at all!!!
+
+    #   POWER      = 0x01
+    #   BRIGHTNESS = 0x04
+
+    #   COLOR      = 0x05
+        #   MANUAL     = 0x02 - seems to be wrong for this lamp
+        #   MICROPHONE = 0x01 - can not be confirmed yet
+        #   SCENES     = 0x04
+    ```
 
 
 *[HAP]: HomeKit Accessory Protocol
