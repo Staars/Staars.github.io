@@ -1,8 +1,44 @@
 # MI32  
   
-The MI32-driver focuses on the passive observation of BLE sensors of the Xiaomi/Mijia universe, thus only needing a small memory footprint. This allows to additionally run a dedicated software bridge to Apples HomeKit with very few additional configuration steps. Berry can be used in parallel.
+The MI32-driver focuses on the passive observation of BLE sensors of the Xiaomi/Mijia universe, thus only needing a small memory footprint. This allows to additionally run a dedicated software bridge to Apples HomeKit with very few additional configuration steps. Berry can be used in parallel.  
+Currently supported are the original ESP32 and the ESP32-C3.
 
-   
+## Usage
+  
+This driver is not part of any standard build. To self compile it is recommended to add build environments to `platformio_tasmota_cenv.ini`. This file needs to be created first.  
+Add these sections:  
+```
+[env:tasmota32-mi32-homebridge]
+extends                 = env:tasmota32_base
+build_flags             = ${env:tasmota32_base.build_flags}
+                          -DUSE_MI_ESP32
+                          -DUSE_MI_EXT_GUI
+                          -DUSE_MI_HOMEKIT=1    ; 1 to enable; 0 to disable
+lib_extra_dirs          = lib/libesp32, lib/libesp32_div, lib/lib_basic, lib/lib_i2c, lib/lib_div, lib/lib_ssl
+lib_ignore              = ESP8266Audio
+                          ESP8266SAM
+                          TTGO TWatch Library
+                          Micro-RTSP
+                          epdiy
+                          esp32-camera
+
+[env:tasmota32c3-mi32-homebridge]
+extends                 = env:tasmota32c3
+build_flags             = ${env:tasmota32_base.build_flags}
+                          -DUSE_MI_ESP32
+                          -DUSE_MI_EXT_GUI
+                          -DUSE_MI_HOMEKIT=1    ; 1 to enable; 0 to disable
+lib_extra_dirs          = lib/libesp32, lib/libesp32_div, lib/lib_basic, lib/lib_i2c, lib/lib_div, lib/lib_ssl
+lib_ignore              = ESP8266Audio
+                          ESP8266SAM
+                          TTGO TWatch Library
+                          Micro-RTSP
+                          epdiy
+                          esp32-camera
+```
+  
+It is probably necessary to restart your IDE (i.e. Visual Studio Code) to see the option to build these environments.
+
 ## Tasmota and BLE-sensors
 
 Different vendors offer Bluetooth solutions as part of the XIAOMI family often under the MIJIA-brand (while AQUARA is the typical name for a ZigBee sensor).  
@@ -261,7 +297,7 @@ It just works ... except, when it does not.
   
 This will generate a QR-Code based on the MAC address of the ESP32 which runs Tasmotas Homekit-Bridge. Use the camera of your iPhone or iPad to easily start the setup procedure.  
   
-<input size="20" type="text" id="Wifi-MAC" value="" onkeydown="makeQRCode(this)" placeholder="WiFi MAC of the ESP32"><br>
+<input size="20" type="text" id="Wifi-MAC" value="" onkeydown="makeQRCode(this)" placeholder="Input WiFi MAC of the ESP32"><br>
   
 
 <svg viewBox="0 0 400 540" id="HomeKitQRcode" xmlns="http://www.w3.org/2000/svg" style="max-width:30%;visibility:hidden;height:0;">
@@ -422,7 +458,7 @@ n bytes - data
   
 ### Berry examples
 
-Here is an implementaion of the old MI32 commands:  
+Here is an implementaion of the "old" MI32 commands:  
 !!! example "removed MI32 commands in Berry"
 
     ```python
