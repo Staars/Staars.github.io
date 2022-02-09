@@ -120,7 +120,7 @@ The naming conventions in the product range of bluetooth sensors in XIAOMI-unive
   
  <table>
   <tr>
-    <th class="th-lboi">YEE RC</th>
+    <th class="th-lboi">YLYK01</th>
     <th class="th-lboi">MHO-C401</th>
     <th class="th-lboi">MHO-C303</th>
     <th class="th-lboi">MCCGQ02HL</th>
@@ -148,15 +148,18 @@ The naming conventions in the product range of bluetooth sensors in XIAOMI-unive
  <table>
   <tr>
     <th class="th-lboi">SJWS01L</th>
+    <th class="th-lboi">YLKG07/08</th>
   </tr>
   <tr>
     <td class="tg-lboi"><img src="../_media/bluetooth/SJWS01L.png" width=200></td>
+    <td class="tg-lboi"><img src="../_media/bluetooth/YLKG08.png" width=200></td>
   </tr>
   <tr>
     <td class="tg-lboi">button press (single and long), leak alarm, battery</td>
+    <td class="tg-lboi">button press (single and double), hold,<br> incremental rotary encoder w/o press</td>
   </tr>
-     <tr>
     <td class="tg-lboi">passive only with decryption</td>
+    <td class="tg-lboi">passive only with decryption (legacy decryption)<br>both versions reported as YLKG08</td>
   </tr>
 </table> 
 passive: data is received via BLE advertisments  
