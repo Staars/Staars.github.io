@@ -384,13 +384,23 @@ To listen to advertisements inside a class (that could be a driver) we could ini
   var ble, cbp, buf
   def init()
       self.buf = bytes(-64)
-      self.cbp = tasmota.gen_cb(/-> self.cb())
+      self.cbp = tasmota.gen_cb(/s,m-> self.cb(s,m))
       self.ble = BLE()
       self.ble.adv_cb(self.cbp,self.buf)
   end
 
-  def cb()
+  def cb(svc,manu)
     print(buf) # simply prints out the byte buffer of an advertisement packet
+    if svc != 0 # if service data present
+        print("service data:")
+        var _len = self.buf[svc-2]-1
+        print(self.buf[svc.._len+svc])
+    end
+    if manu != 0 # if manufacturer data present
+        print("manufacturer data:")
+        var _len = self.buf[manu-2]-1
+        print(self.buf[manu.._len+manu])
+    end
   end
   ```
 
@@ -401,15 +411,16 @@ We just have to provide a pointer to a (callback) function and a byte buffer.  T
 ```haskell
 6 bytes - MAC
 1 byte - address type 
-2 bytes - SVC
 1 byte  - RSSI
-1 byte  - length of service data in bytes (maybe zero!!)
-n bytes - service data (i.e. payload of the Xiaomi sensors) if present - if 
-          NOT the first byte is the length of manufacturer data in bytes 
-if(no service data):
-  1 byte  - length of manufacturer data (maybe zero too!!)
-  n bytes - manufacturer data (i.e. iBeacon data)
+1 byte  - length of payload data
+n bytes - payload data 
 ```
+  
+The advertisement callback function provides 2 arguments, which are indices of the whole buffer that point to optional parts of the payload. A value of 0 means, this type of of element is not in the payload.  
+1. svc (= service data index) - index of service data in the advertisment buffer  
+2. manu (= manufacturer data index) - index of manufacturer data in the advertisment buffer  
+  
+The payload is always provided completely, so every possibles AD type can be parsed in Berry if needed, but for convenience the two most important types for IOT applications are given in the callback.  
 
   
 Communicating via connections is a bit more complex. We have to start with a callback function and a byte buffer again.  
@@ -417,7 +428,7 @@ Communicating via connections is a bit more complex. We have to start with a cal
 ble = BLE()
 cbuf = bytes(-64)
 
-def cb(error)
+def cb(error,op,uuid)
 end
 
 cbp = tasmota.gen_cb(cb)
@@ -435,7 +446,15 @@ Error codes:
 - 6 - characteristic not writable
 - 7 - did not write value
 - 8 - timeout: did not read on notify
+  
+Op codes:
 
+- 1 - read  
+- 2 - write  
+- 3 - notify read
+  
+UUID:  
+Returns the 16 bit UUID of the characteristic, that returns a value.
   
 Internally this creates a context, that can be modified with the follwing methods:
   
@@ -447,13 +466,18 @@ Set service and characteristic:
 `ble.set_chr(string)`: where string is a 16-Bit, 32-Bit or 128-Bit characteristic uuid  
 
 Finally run the context with the specified properties and (if you want to get data back to Berry) have everything prepared in the callback function:  
-`ble.run(operation)`: where operation is a number, that represents an operation in a proprietary format. Current implemention disconnects after every operation:
+`ble.run(operation)`: where operation is a number, that represents an operation in a proprietary format. Values below 10 will not disconnect automatically after completion:
 
-- 11 - read  
-- 12 - write  
-- 13 - notify read  
+- 1 - read  
+- 2 - write  
+- 3 - notify read  
+- 5 - disconnect  
+
+- 11 - read - then disconnect (returns 1 in the callback)  
+- 12 - write - then disconnect (returns 2 in the callback)  
+- 13 - notify read - then disconnect (returns 3 in the callback)  
   
-The buffer format for reading and writing is in the format (lenth - data):
+The buffer format for reading and writing is in the format (length - data):
 ```
 1 byte  - length of data in bytes
 n bytes - data
@@ -462,7 +486,7 @@ n bytes - data
 ### Berry examples
 
 Here is an implementaion of the "old" MI32 commands:  
-!!! example "removed MI32 commands in Berry"
+!!! example "removed MI32 commands in Berry (deprecated Version!!)"
 
     ```python
     ble = BLE()
@@ -731,12 +755,12 @@ Here is an implementaion of the "old" MI32 commands:
             self.buf = bytes(-21)
             self.buf[0] = 20
             self.buf[1] = 0x33
-            self.cbp = tasmota.gen_cb(/e-> self.cb(e))
+            self.cbp = tasmota.gen_cb(/e,o,u-> self.cb(e,o,u))
             self.ble = BLE()
             self.ble.conn_cb(self.cbp,self.buf)
         end
 
-        def cb(error)
+        def cb(error,op,uuid)
             if error == 0
                 print("success!")
                 return
