@@ -395,6 +395,8 @@ To listen to advertisements inside a class (that could be a driver) we could ini
     if svc != 0 # if service data present
         print("service data:")
         var _len = self.buf[svc-2]-1
+        # the index points to the data part of an AD element, two position before that is length of "type + data", 
+        # so we substract one byte from that length to get the "pure" data length
         print(self.buf[svc.._len+svc])
     end
     if manu != 0 # if manufacturer data present
@@ -413,7 +415,7 @@ We just have to provide a pointer to a (callback) function and a byte buffer.  T
 6 bytes - MAC
 1 byte - address type 
 1 byte  - RSSI
-1 byte  - length of payload data
+1 byte  - length of payload
 n bytes - payload data 
 ```
   
@@ -422,7 +424,10 @@ The advertisement callback function provides 2 arguments, which are indices of t
 2. manu (= manufacturer data index) - index of manufacturer data in the advertisment buffer  
   
 The payload is always provided completely, so every possibles AD type can be parsed in Berry if needed, but for convenience the two most important types for IOT applications are given in the callback.  
+  
+!!! tip
 
+    The payload can be parsed according to the BLE GAP standard. It consists of AD elements of variable size in the format length-type-data, where the length byte describes the length of the two following components in bytes, the type byte is defined in the GAP and the data parts of 'length-1' bytes is interpreted according to the type.
   
 Communicating via connections is a bit more complex. We have to start with a callback function and a byte buffer again.  
 ```python
@@ -455,7 +460,7 @@ Op codes:
 - 3 - notify read
   
 UUID:  
-Returns the 16 bit UUID of the characteristic, that returns a value.
+Returns the 16 bit UUID of the characteristic as a number, that returns a value.
   
 Internally this creates a context, that can be modified with the follwing methods:
   
@@ -738,29 +743,20 @@ Here is an implementaion of the "old" MI32 commands:
 ??? example "Govee desk lamp - pre-alpha"
 
     ```python
-    lamps =[
-            {"MAC":"AABBCCDDEEFF"}
-            ]
-
+    # control a BLE Govee desk lamp
     class GOVEE : Driver
         var ble, cbp, buf
-
-        def init()
-            if size(lamps) > 0
-                for idx:0..size(lamps)-1
-                    var _tmp = lamps[idx]['MAC']
-                    print(_tmp)
-                    lamps[idx]['MAC'] = bytes(_tmp)
-                end
-            end
-            self.buf = bytes(-21)
-            self.buf[0] = 20
-            self.buf[1] = 0x33
-            self.cbp = tasmota.gen_cb(/e,o,u-> self.cb(e,o,u))
+    
+        def init(MAC)
+            self.buf = bytes(-21) # create a byte buffer, first byte reserved for length info
+            self.buf[0] = 20 # length of the data part of the buffer in bytes
+            self.buf[1] = 0x33 # a magic number - control byte for the Govee lamp
+            self.cbp = tasmota.gen_cb(/e,o,u->self.cb(e,o,u)) # create a callback function pointer
             self.ble = BLE()
             self.ble.conn_cb(self.cbp,self.buf)
+            self.ble.set_MAC(bytes(MAC),1) # addrType: 1 (random)
         end
-
+    
         def cb(error,op,uuid)
             if error == 0
                 print("success!")
@@ -768,39 +764,33 @@ Here is an implementaion of the "old" MI32 commands:
             end
             print(error)
         end
-
+    
         def chksum()
-            var cs = 0;
+            var cs = 0
             for i:1..19
                 cs ^= self.buf[i]
             end
             self.buf[20] = cs
         end
-
+    
         def clr()
             for i:2..19
                 self.buf[i] = 0
             end
         end
-
+    
         def writeBuf()
-            var _mac = lamps[0]['MAC']
-            print(_mac)
-            self.ble.set_MAC(_mac,1) # addrType: 1 (random)
             self.ble.set_svc("00010203-0405-0607-0809-0a0b0c0d1910")
             self.ble.set_chr("00010203-0405-0607-0809-0a0b0c0d2b11")
             self.chksum()
             print(self.buf)
-            self.ble.run(12) # op: 12 (write)
-        end
-
-        def every_second()
+            self.ble.run(12) # op: 12 (write, then disconnect)
         end
     end
-
-    gv = GOVEE()
+    
+    gv = GOVEE("AABBCCDDEEFF") # MAC of the lamp
     tasmota.add_driver(gv)
-
+    
     def gv_power(cmd, idx, payload, payload_json)
         if int(payload) > 1
             return 'error'
@@ -810,7 +800,7 @@ Here is an implementaion of the "old" MI32 commands:
         gv.buf[3] = int(payload)
         gv.writeBuf()
     end
-
+    
     def gv_bright(cmd, idx, payload, payload_json)
         if int(payload) > 255
             return 'error'
@@ -820,7 +810,7 @@ Here is an implementaion of the "old" MI32 commands:
         gv.buf[3] = int(payload)
         gv.writeBuf()
     end
-
+    
     def gv_rgb(cmd, idx, payload, payload_json)
         var rgb = bytes(payload)
         print(rgb)
@@ -833,7 +823,7 @@ Here is an implementaion of the "old" MI32 commands:
         gv.buf[7] = rgb[2]
         gv.writeBuf()
     end
-
+    
     def gv_scn(cmd, idx, payload, payload_json)
         gv.clr()
         gv.buf[2] = 5 # color
@@ -841,7 +831,7 @@ Here is an implementaion of the "old" MI32 commands:
         gv.buf[4] = int(payload)
         gv.writeBuf()
     end
-
+    
     def gv_mus(cmd, idx, payload, payload_json)
         var rgb = bytes(payload)
         print(rgb)
@@ -855,23 +845,96 @@ Here is an implementaion of the "old" MI32 commands:
         gv.buf[8] = rgb[3]
         gv.writeBuf()
     end
-
-
+    
+    
     tasmota.add_cmd('gpower', gv_power) # only on/off
     tasmota.add_cmd('bright', gv_bright) # brightness 0 - 255
     tasmota.add_cmd('color', gv_rgb) #  color 00FF0000 - sometimes the last byte has to be set to something greater 00, usually it should be 00
     tasmota.add_cmd('scene', gv_scn) # scene 0 - ?,
     tasmota.add_cmd('music', gv_mus) # music 00 - 0f + color 000000   -- does not work at all!!!
-
+    
     #   POWER      = 0x01
     #   BRIGHTNESS = 0x04
-
+    
     #   COLOR      = 0x05
         #   MANUAL     = 0x02 - seems to be wrong for this lamp
         #   MICROPHONE = 0x01 - can not be confirmed yet
         #   SCENES     = 0x04
     ```
+??? example "Xbox X/S controller - proof of concept"
 
+    ```python
+    # just a proof of concept to connect a Xbox X/S controller
+    # must be repaired on every connect
+    class XBOX : Driver
+        var ble, cbp, buf
+
+        def init(MAC)
+            self.cbp = tasmota.gen_cb(/e,o,u->self.cb(e,o,u))
+            self.buf = bytes(-256)
+            self.ble = BLE()
+            self.ble.conn_cb(self.cbp,self.buf)
+            self.ble.set_MAC(bytes(bytes(MAC)),0)
+            self.connect()
+        end
+
+        def connect() # separated to call it from the berry console if needed
+            self.ble.set_svc("1812")
+            self.ble.set_chr("2a4a") # the first characteristic we have to read
+            self.ble.run(1) # read
+        end
+
+        def handle_read_CB(uuid) # uuid is the notifying characteristic
+        # we just have to read these characteristics before we can finally subscribe
+            if uuid == 0x2a4a # ignore data
+                self.ble.set_chr("2a4b")
+                self.ble.run(1) # read next characteristic 
+            end
+            if uuid == 0x2a4b # ignore data
+                self.ble.set_chr("2a4d")
+                self.ble.run(1) # read next characteristic 
+            end
+            if uuid == 0x2a4d # ignore data
+                self.ble.set_chr("2a4d")
+                self.ble.run(3) # start notify
+            end
+        end
+
+        def handle_HID_notifiaction() # a very incomplete parser
+            if self.buf[14] == 1
+                print("ButtonA") # a MQTT message could actually trigger something
+            end
+            if self.buf[14] == 2
+                print("ButtonB")
+            end
+            if self.buf[14] == 8
+                print("ButtonX")
+            end
+            if self.buf[14] == 16
+                print("ButtonY")
+            end
+        end
+
+        def cb(error,op,uuid)
+            if error == 0
+                if op == 1
+                    print(op,uuid)
+                    self.handle_read_CB(uuid)
+                end
+                if op == 3
+                self.handle_HID_notification()
+                end
+                return
+            else
+                print(error)
+            end
+        end
+
+    end
+
+    xbox = XBOX("AABBCCDDEEFF")  # xbox controller MAC
+    tasmota.add_driver(xbox)
+    ```
 
 *[HAP]: HomeKit Accessory Protocol
 *[NVS]: Non Volatile Storage
