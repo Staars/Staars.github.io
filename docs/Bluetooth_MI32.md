@@ -1,7 +1,7 @@
 # MI32  
   
 The MI32-driver focuses on the passive observation of BLE sensors of the Xiaomi/Mijia universe, thus only needing a small memory footprint. This allows to additionally run a dedicated software bridge to Apples HomeKit with very few additional configuration steps. Berry can be used in parallel.  
-Currently supported are the original ESP32 and the ESP32-C3.
+Currently supported are the original ESP32, the ESP32-C3 and the ESP32-S3.
 
 ## Usage
   
@@ -283,10 +283,16 @@ MI32Option4|`0` = use passive scanning (default)<br>`1` = use active scanning, n
 
     If you want to add a new BLE sensor to your config on the device, use `MI32option3 1` to add the new sensor by catching a BLE packet. Then use `MI32Cfg` to save the new config on flash.
   
-
+  
+## Mi Dashboard
+  
+The driver provides an extended web GUI to show the observed Xiaomi sensors in a widget style, that features a responsive design to use the screen area as effective as possible. The other advantage is, that only the widget with new data gets redrawn (indicated by a fading circle) and no unnessecary refresh operations will happen. A simple graph shows if valid data for every hour was received in the last 24h, where only one gap for the coming hour is not a sign of an error. Configured sensors with no received packet since boot or key/decryption errors are dimmed.  
+  
 ## HomeKit Bridge
   
-If activated at compile time the driver will start the HAP core (= the main task of the HomeKit framework) after succesfully reading a valid **mi32cfg** file after the start. It will create a 'bridge accessory' presenting all configured BLE devices to HomeKit. You can add the ESP32 as such a **Mi-Home-Bridge** to HomeKit in the native way, like you would add a commercial product to you local HomeKit network. The setup key is derived from the Wifi MAC of your ESP32 to easily allow many ESP32 to be used as a HomeKit bridge in your local network. Besides the driver will also manage up to four relays and sync them with HomeKit. There is nothing more to configure, the driver will automatically translate the data packets back and forth.  
+If activated at compile time the driver will start the HAP core (= the main task of the HomeKit framework) after succesfully reading a valid **mi32cfg** file after the start. It will create a 'bridge accessory' presenting all configured BLE devices to HomeKit. You can add the ESP32 as such a **Mi-Home-Bridge** to HomeKit in the native way, like you would add a commercial product to you local HomeKit network. The setup key is derived from the Wifi MAC of your ESP32 to easily allow many ESP32 to be used as a HomeKit bridge in your local network.  
+Besides the driver will also manage up to four relays and sync them with HomeKit.  
+There is nothing more to configure, the driver will automatically translate the data packets back and forth.  
 It just works ... except, when it does not.
 
 !!! danger "Known issues"
@@ -428,6 +434,14 @@ The payload is always provided completely, so every possibles AD type can be par
 !!! tip
 
     The payload can be parsed according to the BLE GAP standard. It consists of AD elements of variable size in the format length-type-data, where the length byte describes the length of the two following components in bytes, the type byte is defined in the GAP and the data parts of 'length-1' bytes is interpreted according to the type.
+
+Two methods for filtering of advertisements are provided:  
+`ble.adv_watch(mac,type)`: watch BLE address exclusively, is added to a list (mac is a 6-byte-buffer, type is optional 0-3, default is 0)  
+`ble.adv_block(mac,type)`: block  BLE address, is added to a list(mac is a 6-byte-buffer, type is optional 0-3, default is 0)  
+  
+!!! tip
+
+    The watchlist is more effective to avoid missing packets, than the blocklist in environments with high BLE traffic. Both methods work for the internal Xiaomi driver and the post processing with Berry.
   
 Communicating via connections is a bit more complex. We have to start with a callback function and a byte buffer again.  
 ```python
@@ -445,19 +459,21 @@ Error codes:
 
 - 0 - no error
 - 1 - connection error
-- 2 - did not get service
-- 3 - did not get characteristic
-- 4 - could not read value
-- 5 - characteristic can not notify
-- 6 - characteristic not writable
-- 7 - did not write value
-- 8 - timeout: did not read on notify
+- 2 - did disconnect
+- 3 - did not get service
+- 4 - did not get characteristic
+- 5 - could not read value
+- 6 - characteristic can not notify
+- 7 - characteristic not writable
+- 8 - did not write value
+- 9 - timeout: did not read on notify
   
 Op codes:
 
 - 1 - read  
 - 2 - write  
-- 3 - notify read
+- 3 - subscribe - direct response after launching a run command to subscribe
+- 103 - notify read - the notification with data from the BLE server
   
 UUID:  
 Returns the 16 bit UUID of the characteristic as a number, that returns a value.
@@ -472,16 +488,16 @@ Set service and characteristic:
 `ble.set_chr(string)`: where string is a 16-Bit, 32-Bit or 128-Bit characteristic uuid  
 
 Finally run the context with the specified properties and (if you want to get data back to Berry) have everything prepared in the callback function:  
-`ble.run(operation)`: where operation is a number, that represents an operation in a proprietary format. Values below 10 will not disconnect automatically after completion:
+`ble.run(operation,response)`: where operation is a number (optional: boolean w/o server response to write or subscribe, default is false) , that represents an operation in a proprietary format. Values below 10 will not disconnect automatically after completion:
 
 - 1 - read  
 - 2 - write  
-- 3 - notify read  
+- 3 - subscribe  
 - 5 - disconnect  
 
 - 11 - read - then disconnect (returns 1 in the callback)  
 - 12 - write - then disconnect (returns 2 in the callback)  
-- 13 - notify read - then disconnect (returns 3 in the callback)  
+- 13 - subscribe - then disconnect after waiting for notification(returns 3 in the callback)  
   
 The buffer format for reading and writing is in the format (length - data):
 ```
@@ -492,7 +508,7 @@ n bytes - data
 ### Berry examples
 
 Here is an implementaion of the "old" MI32 commands:  
-!!! example "removed MI32 commands in Berry (deprecated Version!!)"
+!!! example "removed MI32 commands in Berry"
 
     ```python
     ble = BLE()
@@ -542,7 +558,7 @@ Here is an implementaion of the "old" MI32 commands:
         cbuf.set(1,utc,4)
         cbuf.set(5,tz,1)
         j = 0
-        ble.run(12)
+        ble.run(12,1)
     end
 
     def MI32Unit(slot,unit)
@@ -552,7 +568,7 @@ Here is an implementaion of the "old" MI32 commands:
         cbuf[0] = 1
         cbuf[1] = unit
         j = 0
-        ble.run(12)
+        ble.run(12,1)
     end
 
     def MI32Bat(slot)
@@ -568,32 +584,32 @@ Here is an implementaion of the "old" MI32 commands:
             ble.set_svc("ebe0ccb0-7A0A-4B0C-8A1A-6FF2997DA3A6")
             ble.set_chr("ebe0ccc1-7A0A-4B0C-8A1A-6FF2997DA3A6")
             j = 1
-            ble.run(13)
+            ble.run(13,1)
         end
         if name == "LYWSD02"
             ble.set_svc("ebe0ccb0-7A0A-4B0C-8A1A-6FF2997DA3A6")
             ble.set_chr("ebe0ccc1-7A0A-4B0C-8A1A-6FF2997DA3A6")
             j = 2
-            ble.run(11)
+            ble.run(11,1)
         end
         if name == "FLORA"
             ble.set_svc("00001204-0000-1000-8000-00805f9b34fb")
             ble.set_chr("00001a02-0000-1000-8000-00805f9b34fb")
             j = 3
-            ble.run(11)
+            ble.run(11,1)
         end
         if name == "CGD1"
             ble.set_svc("180F")
             ble.set_chr("2A19")
             j = 4
-            ble.run(11)
+            ble.run(11,1)
         end
     end
     ```
   
 #### More Examples
 
-??? example "MI32Scan"
+??? example "MI32Scan (deprecated Version!!)"
 
     ```python
     beacons =[
