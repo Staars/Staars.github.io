@@ -141,13 +141,7 @@ If you have followed [Hardware preparation](#hardware-preparation), your device 
 !!! tip "You may want to back up the device manufacturer's firmware on the one in a million chance you don't like Tasmota."
 
 
-<script>
-s=document.createElement('script');s.type='module';s.src="https://unpkg.com/esp-web-tools@7.3.1/dist/web/install-button.js?module";document.body.append(s);
-b=document.createElement("esp-web-install-button");b.manifest="https://tasmota.github.io/install/manifest/release.tasmota.manifest.json";
-function appendInTable(){
-ph=document.getElementById("web_installer").parentElement.nextElementSibling.nextElementSibling.children[5].firstElementChild.firstElementChild;
-ph.parentNode.append(b);
-}</script>
+<script src="../extra_javascript/web_flasher.js"></script>
 <!-- Hard coded hack to get the postion in tabbed set after that. Must be placed before the tabbed set. Tabbed set MUST not be altered in its structure!! -->
 <img id='web_installer'src onerror='appendInTable()'> 
 
@@ -155,7 +149,14 @@ ph.parentNode.append(b);
 Choose an installation method:
 
 === "Web Installer :material-google-chrome:"
-    With a Chrome based browser connect your ESP device to serial and click CONNECT.
+    1. Connect the ESP device to your computer
+        using USB or serial-to-USB adapter
+
+    2. Select the firmware variant suitable for
+        your device
+
+    3. Hit "Install" and select the correct port
+        or find help if no device found
 
 
 === "Tasmotizer! :material-linux: :material-apple: :material-microsoft-windows:"
