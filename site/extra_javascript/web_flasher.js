@@ -29,7 +29,8 @@ function make_select(data){
             var opt=document.createElement('option');
             opt.label = name;
             var prefix = "https://raw.githubusercontent.com/tasmota/install/main"; //to be removed on the real server
-            opt.value = prefix + "/manifest/" + name + ".manifest.json";
+            opt.value = prefix + "/manifest/" + opt_group + "." +name + ".manifest.json";
+            console.log( opt.value);
             og.appendChild(opt);
         }
     }
