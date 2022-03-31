@@ -10,7 +10,6 @@ sel=document.createElement('select');
 sel.classList.add('pick-variant');
 p.appendChild(sel);
 
-
 fetch('../extra_javascript/manifests.json')
   .then(response => response.json())
   .then(data => make_select(data));
@@ -39,7 +38,8 @@ function make_select(data){
 
 function appendInTable(){
 const anchor_point =document.getElementById("web_installer").parentElement.nextElementSibling.nextElementSibling.children[5].firstElementChild.firstElementChild;
-anchor_point.parentNode.append(p);
+// console.log(b.shadowRoot.firstChild.name);
+// anchor_point.parentNode.append(p);
 anchor_point.parentNode.append(b);
 const selectEl = document.querySelector(".pick-variant");
 const installEl = document.querySelector("esp-web-install-button");
@@ -49,3 +49,23 @@ selectEl.addEventListener("change", () => {
     console.log(installEl.manifest);
 });
 }
+
+window.addEventListener("load", function(event) {
+    const button = document.querySelector("esp-web-install-button");
+    // const unsupp = document.querySelector("esp-web-install-button").shadowRoot.firstChild.name
+    console.log(button.shadowRoot.firstChild.name);
+    if(button.shadowRoot.firstChild.name == 'activate'){
+        // $("esp-web-install-button").before(p);
+        button.insertAdjacentHTML('beforebegin','<ol><li> <p>Connect the ESP device to your computer using USB or serial-to-USB adapter</p> </li><li> <p>Select the firmware variant suitable for your device</p> </li></ol>');
+        // button.insertAdjacentHTML('beforebegin','<br>');
+        button.insertAdjacentElement('beforebegin',p);
+        button.insertAdjacentHTML('beforebegin','<ol><li> <p>Hit "CONNECT" and select the correct port or find help if no device found</p> </li></ol>');
+        // button.insertAdjacentHTML('beforebegin','<br>');
+    }
+},{ once: true });
+
+{/* <ol>
+<li> <p>Connect the ESP device to your computer using USB or serial-to-USB adapter</p> </li>
+<li> <p>Select the firmware variant suitable for your device</p> </li>
+<li> <p>Hit "Install" and select the correct port or find help if no device found</p> </li>
+</ol> */}

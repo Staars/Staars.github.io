@@ -149,14 +149,7 @@ If you have followed [Hardware preparation](#hardware-preparation), your device 
 Choose an installation method:
 
 === "Web Installer :material-google-chrome:"
-    1. Connect the ESP device to your computer
-        using USB or serial-to-USB adapter
-
-    2. Select the firmware variant suitable for
-        your device
-
-    3. Hit "Install" and select the correct port
-        or find help if no device found
+    Embedded Web App:
 
 
 === "Tasmotizer! :material-linux: :material-apple: :material-microsoft-windows:"
@@ -249,7 +242,8 @@ Choose an installation method:
     - [**Sonoff DIY**](Sonoff-DIY) - OTA flash for select Sonoff devices **Does not work anymore**
     - [**esp2ino**](https://github.com/elahd/esp2ino) - OTA flash for select Wyze devices. **Does not work anymore**
 
-You've successfully flashed your device with Tasmota but now you need to connect the freshly tasmotised device to your Wi-Fi network. 
+  
+If You've successfully flashed your device with Tasmota, now you need to connect the freshly tasmotised device to your Wi-Fi network. 
 
 ## Initial Configuration
 
