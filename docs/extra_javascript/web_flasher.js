@@ -28,7 +28,7 @@ function make_select(data){
             // console.log(data[opt_group][fw]);
             var opt=document.createElement('option');
             opt.label = name;
-            var prefix = "https://Staars.github.io/install/"; //to be ebentually removed on the real server
+            var prefix = "https://raw.githubusercontent.com/Staars/install/main"; //to be ebentually removed on the real server
             opt.value = prefix + "/manifest_ext/" + opt_group + "." +name + ".manifest.json";
             console.log( opt.value);
             og.appendChild(opt);
