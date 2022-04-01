@@ -243,7 +243,6 @@ Choose an installation method:
     - [**esp2ino**](https://github.com/elahd/esp2ino) - OTA flash for select Wyze devices. **Does not work anymore**
 
   
-If You've successfully flashed your device with Tasmota, now you need to connect the freshly tasmotised device to your Wi-Fi network. 
 
 ## Initial Configuration
 
