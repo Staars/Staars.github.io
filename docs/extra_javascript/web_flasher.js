@@ -29,7 +29,7 @@ function make_select(data){
             var opt=document.createElement('option');
             opt.label = name;
             var prefix = "https://tasmota.github.io/install/"; //to be ebentually removed on the real server
-            opt.value = prefix + "/manifest/" + opt_group + "." +name + ".manifest.json";
+            opt.value = prefix + "/manifest_ext/" + opt_group + "." +name + ".manifest.json";
             console.log( opt.value);
             og.appendChild(opt);
         }
