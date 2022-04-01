@@ -11,13 +11,13 @@ sel=document.createElement('select');
 sel.classList.add('pick-variant');
 p.appendChild(sel);
 
-fetch('../extra_javascript/manifests.json')
+fetch('https://tasmota.github.io/install/manifests.json')
   .then(response => response.json())
   .then(data => make_select(data));
 
 
 function make_select(data){
-    console.log(data);
+    // console.log(data);
     for (opt_group in data){
         var og=document.createElement('optgroup');
         og.label = opt_group;
@@ -28,7 +28,7 @@ function make_select(data){
             // console.log(data[opt_group][fw]);
             var opt=document.createElement('option');
             opt.label = name;
-            var prefix = "https://raw.githubusercontent.com/tasmota/install/main"; //to be removed on the real server
+            var prefix = "https://tasmota.github.io/install/"; //to be ebentually removed on the real server
             opt.value = prefix + "/manifest/" + opt_group + "." +name + ".manifest.json";
             console.log( opt.value);
             og.appendChild(opt);
@@ -46,7 +46,7 @@ anchor_point.parentNode.append(b);
 window.addEventListener("load", function(event) {
     //step2: check result of attempt to add button to DOM
     try{
-        document.body.style.cssText = "--mdc-typography-body1-font-size:1.5em;" //smaller text for Jason8266 ;)
+        document.body.style.cssText = "--mdc-typography-button-font-size:0.7em;--mdc-dialog-min-width:490px";
         const button = document.querySelector("esp-web-install-button");
         console.log(button.shadowRoot.firstChild.name);
         if(button.shadowRoot.firstChild.name == 'activate'){
