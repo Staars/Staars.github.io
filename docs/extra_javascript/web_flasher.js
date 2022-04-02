@@ -46,8 +46,9 @@ anchor_point.parentNode.append(b);
 window.addEventListener("load", function(event) {
     //step2: check result of attempt to add button to DOM
     try{
-        document.body.style.cssText = "--mdc-typography-button-font-size:0.7em;--mdc-dialog-min-width:490px";
+        document.body.style.cssText = "--mdc-dialog-min-width:490px;--mdc-dialog-max-width:900px;";
         const button = document.querySelector("esp-web-install-button");
+        button.shadowRoot.firstChild.style.cssText = '.mdc-button .mdc-button__label{font-size:75%;}';
         console.log(button.shadowRoot.firstChild.name);
         if(button.shadowRoot.firstChild.name == 'activate'){
             //success: add the select picker and some info
