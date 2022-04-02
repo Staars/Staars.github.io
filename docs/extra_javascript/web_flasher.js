@@ -1,8 +1,8 @@
 
-
-
-s=document.createElement('script');s.type='module';s.src="https://unpkg.com/esp-web-tools@7.3.1/dist/web/install-button.js?module";
+s=document.createElement('script');s.type='module';
+s.src="https://unpkg.com/esp-web-tools@7.3.1/dist/web/install-button.js?module";
 document.body.append(s);
+
 b=document.createElement("esp-web-install-button");b.manifest="https://tasmota.github.io/install/manifest/release.tasmota.manifest.json";
 
 
@@ -38,17 +38,26 @@ function make_select(data){
 
 
 function appendInTable(){
-//Step1: add button to DOM
+//Step1: add web flasher button to DOM
 const anchor_point =document.getElementById("web_installer").parentElement.nextElementSibling.nextElementSibling.children[5].firstElementChild.firstElementChild;
 anchor_point.parentNode.append(b);
+}
+
+var waitForDialogTimer;
+
+function waitForDialog(){
+    //I apologize for this solution...
+    var _ewt = document.querySelector("ewt-install-dialog");
+    if(_ewt){
+        _ewt.style.cssText = "--mdc-dialog-max-width:900px;";
+        clearInterval(waitForDialogTimer);
+    }
 }
 
 window.addEventListener("load", function(event) {
     //step2: check result of attempt to add button to DOM
     try{
-        document.body.style.cssText = "--mdc-dialog-min-width:490px;--mdc-dialog-max-width:900px;";
         const button = document.querySelector("esp-web-install-button");
-        button.shadowRoot.firstChild.style.cssText = '.mdc-button .mdc-button__label{font-size:75%;}';
         console.log(button.shadowRoot.firstChild.name);
         if(button.shadowRoot.firstChild.name == 'activate'){
             //success: add the select picker and some info
@@ -61,13 +70,19 @@ window.addEventListener("load", function(event) {
                 button.manifest = selectEl.value;
                 console.log(button.manifest);
             });
+            button.addEventListener("click", () => {
+                console.log("Wait for dialog to set max-width ...");
+                waitForDialogTimer = setInterval(waitForDialog, 500);
+            });
+            // stop mkdocs keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                e.stopPropagation();
+            });
         }
-
     }
     catch(e){
         const anchor_point =document.getElementById("web_installer").parentElement.nextElementSibling.nextElementSibling.children[5].firstElementChild.firstElementChild;
         anchor_point.insertAdjacentHTML('afterbegin','<p>Unsupported platform/browser. Use another flashing method.</p>');
         console.log(e);
     }
-
 },{ once: true });
