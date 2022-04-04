@@ -143,7 +143,7 @@ If you have followed [Hardware preparation](#hardware-preparation), your device 
 
 <script src="../extra_javascript/web_flasher.js"></script>
 <!-- Hard coded hack to get the postion in tabbed set after that. Must be placed before the tabbed set. Tabbed set MUST not be altered in its structure!! -->
-<img id='web_installer'src onerror='appendInTable()'> 
+<span id='web_installer'> 
 
 
 Choose an installation method:
