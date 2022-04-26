@@ -913,6 +913,9 @@ function fillConfig() {
 }
 
 window.onload = function() {
+    if(document.head.getElementsByTagName("title")[0].innerHTML != "MI32 - Tasmota"){
+        return;
+    }
     resetVariables();
     try{
       if(navigator.bluetooth.getAvailability()){
@@ -927,32 +930,31 @@ window.onload = function() {
         addLog('Bluetooth not supported by browser!!');
         document.getElementById("bind_key_section").innerHTML = 'Bluetooth not supported by browser!! Try Chrome, Opera or Edge.';
     }
+    document.getElementById("Wifi-MAC").addEventListener('change', makeQRCode);
 }
 
 // QRCode section
 // basically a port of: https://github.com/simongolms/homekit-qrcode ... Many Thanks!!!
 
-var qrcode = new QRCode(document.getElementById("qrcode"), {
-    width : 100,
-    height : 100,
-    useSVG: true
-});
-
-function makeQRCode (input) {
-    if(event.key === 'Enter') {
-        const code = getCodeFromMAC(input.value);
-        console.log(makeURI(code));
-        var idx = 1;
-        for (var s of code){
-          digID = "Digit" + idx;
-          digRef = "#" + s;
-          document.getElementById(digID).setAttribute("href",digRef);
-          idx++;
-        }
-        qrcode.makeCode(makeURI(code),{correctLevel:'Q',version:2,margin:0});
-        document.getElementById("HomeKitQRcode").style.visibility = "visible";
-        document.getElementById("HomeKitQRcode").style.height = "";
+function makeQRCode () {
+    const code = getCodeFromMAC(document.getElementById("Wifi-MAC").value);
+    console.log(makeURI(code));
+    var idx = 1;
+    const _hk_QR_el = document.getElementById("hk_qrcode");
+    for (var s of code){
+        digID = "Digit" + idx;
+        digRef = "#" + s;
+        _hk_QR_el.contentDocument.firstChild.getElementById(digID).setAttribute("href",digRef);
+        idx++;
     }
+    const qrcode = new QRCode(_hk_QR_el.contentDocument.firstChild.getElementById("qrcode"), {
+        width : 100,
+        height : 100,
+        useSVG: true
+    });
+    qrcode.makeCode(makeURI(code),{correctLevel:'Q',version:2,margin:0});
+    _hk_QR_el.contentDocument.firstChild.style.visibility = "visible";
+    _hk_QR_el.style.height = "400px";
 }
 
 function makeURI (code){

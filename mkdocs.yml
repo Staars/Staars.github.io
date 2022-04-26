@@ -108,7 +108,6 @@ extra_css:
 
 extra_javascript:
    - 'extra_javascript/crypto.js'
-   - 'extra_javascript/qrcode.js'
    - 'extra_javascript/bindkey.js'
 
 
