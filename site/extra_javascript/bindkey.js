@@ -708,14 +708,15 @@ function do_login_generate() {
 // }
 
 function drawMi32cfgTable(){
-  document.getElementById('oldMi32Cfg').innerHTML = '';
+  const _oldMi32Cfg = document.getElementById("mi32cfg_tab").parentElement.nextElementSibling.children[3].firstElementChild.firstElementChild;
+  _oldMi32Cfg.innerHTML = '';
     var _header = document.createElement("thead");
     var _header_row = document.createElement("tr");
     var _text = document.createElement("th");
-    _text.innerHTML = 'MI32Cfg';
+    // _text.innerHTML = 'MI32Cfg';
     _header_row.appendChild(_text);
     _header.appendChild(_header_row);
-    document.getElementById('oldMi32Cfg').appendChild(_header);
+    _oldMi32Cfg.appendChild(_header);
     var i  = 0;
     var _body = document.createElement("tbody");
     for(_sensor of finalJSON){
@@ -741,7 +742,7 @@ function drawMi32cfgTable(){
       // addLog(result);
       i += 1;
   }
-  document.getElementById('oldMi32Cfg').appendChild(_body);
+  _oldMi32Cfg.appendChild(_body);
 }
 
 function importCfg() {
@@ -820,7 +821,7 @@ function addToFinalJSON(entry){
 }
 
 function updateExportedJSON(){
-  const exportEl = document.getElementById("exportedJSON");
+  const exportEl = document.getElementById("mi32cfg_tab").parentElement.nextElementSibling.children[3].lastElementChild.firstElementChild.firstElementChild.lastElementChild;
   exportEl.innerHTML = "";
   var cp = document.createElement("span");
   cp.className = "cp";
@@ -923,12 +924,12 @@ window.onload = function() {
       }
       else{
         addLog('Bluetooth supported by browser, but no Bluetooth device detected!!');
-        document.getElementById("bind_key_section").innerHTML = 'Bluetooth supported by browser, but no Bluetooth device detected!!';
+        document.getElementById("bind_key_section").innerHTML = '⚠️ Bluetooth supported by browser, but no Bluetooth device detected!! ⚠️';
       }
     }
     catch {
         addLog('Bluetooth not supported by browser!!');
-        document.getElementById("bind_key_section").innerHTML = 'Bluetooth not supported by browser!! Try Chrome, Opera or Edge.';
+        document.getElementById("bind_key_section").innerHTML = '⚠️ Bluetooth not supported by browser!! Try Chrome, Opera or Edge. ⚠️';
     }
     document.getElementById("Wifi-MAC").addEventListener('change', makeQRCode);
 }

@@ -197,20 +197,19 @@ It is recommended to paste the data of 'mi32cfg' into the next textfield, if you
 ### MI32CFG Importer - Web App
 
 <p>MI32CFG <span id='importedDev'>- nothing imported yet</span></p>
-<input size="56" type="text" id="result_config" value="" placeholder="paste your mi32cfg here" style="font-size:1.5em;"><br>
+<input size="56" type="text" id="result_config" value="" placeholder="paste your mi32cfg here"><br>
 <button type="button" class="md-button md-button--primary" onclick="importCfg();">Import MI32Cfg</button>
 
+<span id="mi32cfg_tab">
+=== "Table"
 
-<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio"><input id="__tabbed_2_2" name="__tabbed_2" type="radio"><div class="tabbed-labels">
-<label for="__tabbed_2_1">Table</label>
-<label for="__tabbed_2_2">JSON</label></div> 
-<div class="tabbed-content"><div class="tabbed-block"> <div class="highlight"><pre id="__code_4">
-<div class="md-typeset__scrollwrap"><div class="md-typeset__table">
-<table  id="oldMi32Cfg"></table>
-</div></div>
-</pre></div> </div> 
-<div class="tabbed-block"> <div class="highlight"><pre id="__code_5"><span></span><button class="md-clipboard md-icon" title="Copy to clipboard" data-clipboard-target="#__code_5 > code"></button><code id="exportedJSON"><span  class="cp">[]</span>
-</code></pre></div> </div> </div> </div>
+    empty config
+
+=== "JSON"
+
+    ``` haskell
+    []
+    ```
 
 
   
@@ -308,7 +307,7 @@ It just works ... except, when it does not.
 This will generate a QR-Code based on the MAC address of the ESP32 which runs Tasmotas Homekit-Bridge. Use the camera of your iPhone or iPad to easily start the setup procedure.  
 
 <script src="../extra_javascript/qrcode.js"></script>
-<input size="20" type="text" id="Wifi-MAC" value="" placeholder="Input WiFi MAC of the ESP32" style="font-size:1.5em;"><br>
+<input size="40" type="text" id="Wifi-MAC" value="" placeholder="Input WiFi MAC of the ESP32" style="font-size:1.5em;"><br>
 
 <object data="../extra_javascript/hk_qrcode.svg" id="hk_qrcode" type="image/svg+xml" height="0"></object>
 
