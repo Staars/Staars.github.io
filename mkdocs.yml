@@ -107,8 +107,7 @@ extra_css:
   - 'assets/css/anchor-fix.css'
 
 extra_javascript:
-   - 'extra_javascript/crypto.js'
-   - 'extra_javascript/bindkey.js'
+   - 'extra_javascript/tasmo_observer.js'
 
 
 nav:

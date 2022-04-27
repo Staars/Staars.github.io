@@ -913,25 +913,39 @@ function fillConfig() {
     addClog(result);
 }
 
+function bindKeyPageInit(){
+    const scriptPromiseCrypto = new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        document.body.appendChild(script);
+        script.onload = resolve;
+        script.onerror = reject;
+        script.async = true;
+        script.src = '../extra_javascript/crypto.js';
+        });
+        scriptPromiseCrypto.then(() => {console.log("Crypto library loaded ...")});     
+       
+        resetVariables();
+        try{
+          if(navigator.bluetooth.getAvailability()){
+            addLog('Bluetooth support detected, make sure experimental-web-platform-features is enabled for full functionality');
+          }
+          else{
+            addLog('Bluetooth supported by browser, but no Bluetooth device detected!!');
+            document.getElementById("bind_key_section").innerHTML = '⚠️ Bluetooth supported by browser, but no Bluetooth device detected!! ⚠️';
+          }
+        }
+        catch {
+            addLog('Bluetooth not supported by browser!!');
+            document.getElementById("bind_key_section").innerHTML = '⚠️ Bluetooth not supported by browser!! Try Chrome, Opera or Edge. ⚠️';
+        }
+        document.getElementById("Wifi-MAC").addEventListener('change', makeQRCode);
+}
+
 window.onload = function() {
     if(document.head.getElementsByTagName("title")[0].innerHTML != "MI32 - Tasmota"){
         return;
     }
-    resetVariables();
-    try{
-      if(navigator.bluetooth.getAvailability()){
-        addLog('Bluetooth support detected, make sure experimental-web-platform-features is enabled for full functionality');
-      }
-      else{
-        addLog('Bluetooth supported by browser, but no Bluetooth device detected!!');
-        document.getElementById("bind_key_section").innerHTML = '⚠️ Bluetooth supported by browser, but no Bluetooth device detected!! ⚠️';
-      }
-    }
-    catch {
-        addLog('Bluetooth not supported by browser!!');
-        document.getElementById("bind_key_section").innerHTML = '⚠️ Bluetooth not supported by browser!! Try Chrome, Opera or Edge. ⚠️';
-    }
-    document.getElementById("Wifi-MAC").addEventListener('change', makeQRCode);
+    bindKeyPageInit();
 }
 
 // QRCode section
