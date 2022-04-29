@@ -914,31 +914,34 @@ function fillConfig() {
 }
 
 function bindKeyPageInit(){
-    const scriptPromiseCrypto = new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        document.body.appendChild(script);
-        script.onload = resolve;
-        script.onerror = reject;
-        script.async = true;
-        script.src = '../extra_javascript/crypto.js';
-        });
-        scriptPromiseCrypto.then(() => {console.log("Crypto library loaded ...")});     
-       
-        resetVariables();
-        try{
-          if(navigator.bluetooth.getAvailability()){
-            addLog('Bluetooth support detected, make sure experimental-web-platform-features is enabled for full functionality');
-          }
-          else{
-            addLog('Bluetooth supported by browser, but no Bluetooth device detected!!');
-            document.getElementById("bind_key_section").innerHTML = '⚠️ Bluetooth supported by browser, but no Bluetooth device detected!! ⚠️';
-          }
+    if(typeof sjcl === 'undefined'){
+        const scriptPromiseCrypto = new Promise((resolve, reject) => {
+            console.log("Loading Crypto library ...")
+            const script = document.createElement('script');
+            document.body.appendChild(script);
+            script.onload = resolve;
+            script.onerror = reject;
+            script.async = true;
+            script.src = '../extra_javascript/crypto.js';
+            });
+            scriptPromiseCrypto.then(() => {console.log("Crypto library loaded.")});     
+    }
+    
+    resetVariables();
+    try{
+        if(navigator.bluetooth.getAvailability()){
+        addLog('Bluetooth support detected, make sure experimental-web-platform-features is enabled for full functionality');
         }
-        catch {
-            addLog('Bluetooth not supported by browser!!');
-            document.getElementById("bind_key_section").innerHTML = '⚠️ Bluetooth not supported by browser!! Try Chrome, Opera or Edge. ⚠️';
+        else{
+        addLog('Bluetooth supported by browser, but no Bluetooth device detected!!');
+        document.getElementById("bind_key_section").innerHTML = '⚠️ Bluetooth supported by browser, but no Bluetooth device detected!! ⚠️';
         }
-        document.getElementById("Wifi-MAC").addEventListener('change', makeQRCode);
+    }
+    catch {
+        addLog('Bluetooth not supported by browser!!');
+        document.getElementById("bind_key_section").innerHTML = '⚠️ Bluetooth not supported by browser!! Try Chrome, Opera or Edge. ⚠️';
+    }
+    document.getElementById("Wifi-MAC").addEventListener('change', makeQRCode);
 }
 
 window.onload = function() {

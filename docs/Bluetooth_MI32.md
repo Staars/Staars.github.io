@@ -196,7 +196,7 @@ It is recommended to paste the data of 'mi32cfg' into the next textfield, if you
   
 ### MI32CFG Importer - Web App
 
-<script src="../extra_javascript/bindkey.js"></script>
+<script src="../extra_javascript/bindkey_loader.js"></script>
 <p>MI32CFG <span id='importedDev'>- nothing imported yet</span></p>
 <input size="56" type="text" id="result_config" value="" placeholder="paste your mi32cfg here"><br>
 <button type="button" class="md-button md-button--primary" onclick="importCfg();">Import MI32Cfg</button>
